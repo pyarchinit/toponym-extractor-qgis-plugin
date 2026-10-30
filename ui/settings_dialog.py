@@ -1,5 +1,6 @@
 """Dialogo impostazioni: scelta motore OCR primario, soglia confidenza, provider cloud."""
 
+import html
 import os
 
 from qgis.PyQt.QtCore import QSettings, Qt
@@ -22,8 +23,11 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
     QPushButton,
     QFileDialog,
+    QMessageBox,
+    QApplication,
 )
 
+from ..core import dependency_check
 from ..core.i18n import tr
 from ..core.plugin_version import get_plugin_version
 from ..core.usage_tracker import CLAUDE_MODELS, GPT_MODELS, default_model
@@ -288,6 +292,27 @@ class SettingsDialog(QDialog):
         self.tabs.addTab(cloud_page, tr("Cloud e chiavi"))
         self.tabs.addTab(grid_page, tr("Quadranti"))
 
+        # --- Requisiti ---
+        req_page = QWidget()
+        req_layout = QVBoxLayout(req_page)
+        self.requirements_label = QLabel("")
+        self.requirements_label.setWordWrap(True)
+        self.requirements_label.setOpenExternalLinks(True)
+        self.requirements_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        req_layout.addWidget(self.requirements_label)
+        req_buttons = QHBoxLayout()
+        recheck_btn = QPushButton(tr("Ricontrolla"))
+        recheck_btn.clicked.connect(self._refresh_requirements)
+        self.install_packages_btn = QPushButton(tr("Installa librerie mancanti"))
+        self.install_packages_btn.clicked.connect(self._install_missing_packages)
+        req_buttons.addWidget(recheck_btn)
+        req_buttons.addWidget(self.install_packages_btn)
+        req_buttons.addStretch(1)
+        req_layout.addLayout(req_buttons)
+        req_layout.addStretch(1)
+        self._requirements_tab_index = self.tabs.addTab(req_page, tr("Requisiti"))
+        self.tabs.currentChanged.connect(self._on_tab_changed)
+
         self._update_resolution_mode()
 
         # --- Buttons ---
@@ -297,6 +322,49 @@ class SettingsDialog(QDialog):
         layout.addWidget(button_box)
 
         self.accepted.connect(self._save_settings)
+
+    def _on_tab_changed(self, index):
+        if index == self._requirements_tab_index:
+            self._refresh_requirements()
+
+    def _refresh_requirements(self):
+        """Controlla Tesseract, librerie Python e API key con i valori
+        attualmente nel dialogo (anche se non ancora salvati)."""
+        env_var = self.anthropic_env_var_combo.currentData() or self.anthropic_env_var_combo.currentText().split(" ")[0]
+        items = dependency_check.requirements_report(
+            tesseract_cmd=self.tesseract_cmd_edit.text().strip() or None,
+            tesseract_lang=self.tesseract_lang_edit.text().strip(),
+            claude_key=self.anthropic_key_edit.text().strip() or None,
+            claude_env_var=env_var.strip() or None,
+            openai_key=self.openai_key_edit.text().strip() or None,
+        )
+        icons = {dependency_check.OK: "✓", dependency_check.WARN: "⚠", dependency_check.MISSING: "✗"}
+        rows = []
+        for it in items:
+            link = f' — <a href="{it["url"]}">{it["url_label"]}</a>' if it["url"] else ""
+            rows.append(f'{icons[it["status"]]} <b>{html.escape(it["label"])}</b>: {html.escape(it["detail"])}{link}')
+        self.requirements_label.setText("<br><br>".join(rows))
+        self._missing_pip = [it["pip_name"] for it in items if it["pip_name"] and it["status"] == dependency_check.MISSING]
+        self.install_packages_btn.setEnabled(bool(self._missing_pip))
+
+    def _install_missing_packages(self):
+        names = list(self._missing_pip)
+        if not names:
+            return
+        answer = QMessageBox.question(
+            self, "Toponimi Extractor",
+            tr("Installare ora: {packages}?\n(richiede connessione internet)").format(packages=", ".join(names)),
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+        try:
+            ok, output = dependency_check.install_packages(names)
+        finally:
+            QApplication.restoreOverrideCursor()
+        text = output + "\n\n" + tr("Riavvia QGIS perché le modifiche abbiano effetto.")
+        (QMessageBox.information if ok else QMessageBox.warning)(self, "Toponimi Extractor", text)
+        self._refresh_requirements()
 
     def _browse_tesseract(self):
         current = self.tesseract_cmd_edit.text().strip()

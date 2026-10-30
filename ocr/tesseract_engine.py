@@ -16,6 +16,7 @@ ENGINE_NAME = "tesseract"
 # Python pytesseract, non il motore OCR vero e proprio).
 INSTALL_GUIDE_URL = "https://github.com/tesseract-ocr/tesseract#installing-tesseract"
 PREBUILT_INSTALLERS_URL = "https://tesseract-ocr.github.io/tessdoc/Installation.html"
+TESSDATA_URL = "https://github.com/tesseract-ocr/tessdata"
 INSTALL_HINT = (
     f"Istruzioni di installazione: {INSTALL_GUIDE_URL} — "
     f"installer già pronti: {PREBUILT_INSTALLERS_URL}"

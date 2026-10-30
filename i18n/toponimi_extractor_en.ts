@@ -4,12 +4,12 @@
 <context>
     <name>ToponimiExtractor</name>
     <message>
-        <location filename="../toponimi_extractor.py" line="913"/>
+        <location filename="../toponimi_extractor.py" line="942"/>
         <source>Sovrascrivi e perdi i dati attuali</source>
         <translation>Overwrite and lose current data</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="914"/>
+        <location filename="../toponimi_extractor.py" line="943"/>
         <source>Aggiungi a quelli presenti</source>
         <translation>Add to the existing ones</translation>
     </message>
@@ -119,37 +119,47 @@
         <translation>Toponimi panel</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="250"/>
+        <location filename="../toponimi_extractor.py" line="251"/>
         <source>nessuno</source>
         <translation>none</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="257"/>
+        <location filename="../toponimi_extractor.py" line="258"/>
         <source>nessuna selezionata</source>
         <translation>none selected</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="268"/>
+        <location filename="../toponimi_extractor.py" line="269"/>
         <source>da scegliere alla selezione dell'area</source>
         <translation>to be chosen when selecting the area</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="271"/>
+        <location filename="../toponimi_extractor.py" line="272"/>
         <source>Estrazione in corso...</source>
         <translation>Extraction in progress...</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="446"/>
+        <location filename="../toponimi_extractor.py" line="325"/>
+        <source>Tesseract non trovato: l'OCR locale non funzionerà. Installalo oppure indica il percorso in Impostazioni.</source>
+        <translation>Tesseract not found: local OCR will not work. Install it or set its path in Settings.</translation>
+    </message>
+    <message>
+        <location filename="../toponimi_extractor.py" line="327"/>
+        <source>Scarica Tesseract</source>
+        <translation>Download Tesseract</translation>
+    </message>
+    <message>
+        <location filename="../toponimi_extractor.py" line="475"/>
         <source>Disegna un rettangolo sulla mappa per selezionare l'area di interesse (Esc per annullare).</source>
         <translation>Draw a rectangle on the map to select the area of interest (Esc to cancel).</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="451"/>
+        <location filename="../toponimi_extractor.py" line="480"/>
         <source>Selezione dell'area annullata.</source>
         <translation>Area selection canceled.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="495"/>
+        <location filename="../toponimi_extractor.py" line="524"/>
         <source>Area selezionata.
 
 Vuoi che trovi la modalità migliore per quest'area (risoluzione, quadranti e motore OCR)?
@@ -164,62 +174,62 @@ Yes: a few test readings with the AI model, then the parameters found are used f
 No: the extraction will use the current settings.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="649"/>
+        <location filename="../toponimi_extractor.py" line="678"/>
         <source>Area pronta.</source>
         <translation>Area ready.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="653"/>
+        <location filename="../toponimi_extractor.py" line="682"/>
         <source>Area pronta: i quadranti saranno definiti dalla calibrazione della scala, all'avvio.</source>
         <translation>Area ready: the tiles will be defined by the scale calibration at start.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1060"/>
+        <location filename="../toponimi_extractor.py" line="1089"/>
         <source>Salva il testo per la RAG</source>
         <translation>Save the text for the RAG</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1062"/>
+        <location filename="../toponimi_extractor.py" line="1091"/>
         <source>Markdown (*.md);;Testo (*.txt)</source>
         <translation>Markdown (*.md);;Text (*.txt)</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="273"/>
+        <location filename="../toponimi_extractor.py" line="274"/>
         <source>Ricerca della modalità migliore in corso...</source>
         <translation>Searching for the best mode...</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="418"/>
+        <location filename="../toponimi_extractor.py" line="447"/>
         <source>Seleziona prima, nel pannello Layer, un layer raster WMS attivo.</source>
         <translation>First select an active raster WMS layer in the Layers panel.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="461"/>
+        <location filename="../toponimi_extractor.py" line="490"/>
         <source>Il layer attivo non è più un layer raster WMS: selezionalo e ridisegna l'area.</source>
         <translation>The active layer is no longer a raster WMS layer: select it and redraw the area.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="538"/>
+        <location filename="../toponimi_extractor.py" line="567"/>
         <source>Ricerca della modalità migliore</source>
         <translation>Search for the best mode</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="683"/>
+        <location filename="../toponimi_extractor.py" line="712"/>
         <source>Seleziona prima un'area con lo strumento 'Seleziona area'.</source>
         <translation>First select an area with the 'Select area' tool.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="694"/>
+        <location filename="../toponimi_extractor.py" line="723"/>
         <source>Il layer WMS su cui era stata disegnata l'area non è più nel progetto: seleziona di nuovo l'area con 'Seleziona area'.</source>
         <translation>The WMS layer on which the area was drawn is no longer in the project: select the area again with 'Select area'.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="714"/>
+        <location filename="../toponimi_extractor.py" line="743"/>
         <source>Estrazione in corso</source>
         <translation>Extraction in progress</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="798"/>
+        <location filename="../toponimi_extractor.py" line="827"/>
         <source>L'agente AI ha scelto la configurazione per l'estrazione:
 • Risoluzione: {resolution:.4f} unità CRS/px
 • Dimensione tile: {tile} px — Overlap: {overlap} px
@@ -234,42 +244,42 @@ No: the extraction will use the current settings.</translation>
 • Attempts made: {attempts}/{max_attempts}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="837"/>
+        <location filename="../toponimi_extractor.py" line="866"/>
         <source>Annullamento richiesto: attendo la fine del passo in corso...</source>
         <translation>Cancellation requested: waiting for the current step to finish...</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="876"/>
+        <location filename="../toponimi_extractor.py" line="905"/>
         <source>Nessun toponimo trovato nell'area selezionata.</source>
         <translation>No toponyms found in the selected area.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="902"/>
+        <location filename="../toponimi_extractor.py" line="931"/>
         <source>Nessun toponimo selezionato: nessun punto creato.</source>
         <translation>No toponyms selected: no points created.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1051"/>
+        <location filename="../toponimi_extractor.py" line="1080"/>
         <source>Nessun GeoPackage di toponimi noto: scegli quello da esportare</source>
         <translation>No known toponym GeoPackage: choose the one to export</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1067"/>
+        <location filename="../toponimi_extractor.py" line="1096"/>
         <source>Toponimi estratti — {name}</source>
         <translation>Toponyms extracted — {name}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="259"/>
+        <location filename="../toponimi_extractor.py" line="260"/>
         <source>{width:.0f} × {height:.0f} unità CRS</source>
         <translation>{width:.0f} × {height:.0f} CRS units</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="264"/>
+        <location filename="../toponimi_extractor.py" line="265"/>
         <source>{layer} in {file}</source>
         <translation>{layer} in {file}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="316"/>
+        <location filename="../toponimi_extractor.py" line="345"/>
         <source>Alcune librerie Python opzionali non sono installate nell'ambiente di QGIS:
 
 {packages}
@@ -284,32 +294,32 @@ They are needed for local OCR (Tesseract) and/or the cloud engines (Claude/GPT).
 Do you want to install them now? (requires an internet connection)</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="516"/>
+        <location filename="../toponimi_extractor.py" line="545"/>
         <source>{summary} Controlla l'anteprima sulla mappa, poi premi 'Estrai toponimi'. Nel dubbio su numeri o scritte piccole, 'Raddoppia quadranti' aumenta il dettaglio.</source>
         <translation>{summary} Check the preview on the map, then press 'Extract toponyms'. When in doubt about numbers or small text, 'Double the tiles' increases the detail.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="575"/>
+        <location filename="../toponimi_extractor.py" line="604"/>
         <source>L'estrazione userà le impostazioni correnti.</source>
         <translation>The extraction will use the current settings.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="579"/>
+        <location filename="../toponimi_extractor.py" line="608"/>
         <source>Ricerca annullata: l'estrazione userà le impostazioni correnti.</source>
         <translation>Search canceled: the extraction will use the current settings.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="668"/>
+        <location filename="../toponimi_extractor.py" line="697"/>
         <source>Area selezionata, ma con le impostazioni correnti l'estrazione non può partire.</source>
         <translation>Area selected, but with the current settings the extraction cannot start.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="764"/>
+        <location filename="../toponimi_extractor.py" line="793"/>
         <source>Calibrazione fallita: nessuna scala testata.</source>
         <translation>Calibration failed: no scale tested.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="784"/>
+        <location filename="../toponimi_extractor.py" line="813"/>
         <source>Calibrazione completata. Scala scelta: 1:{scale} ({resolution:.4f} m/px)
 
 Dettaglio test:
@@ -320,22 +330,22 @@ Test details:
 {report}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="816"/>
+        <location filename="../toponimi_extractor.py" line="845"/>
         <source>DETTAGLIO TENTATIVI</source>
         <translation>ATTEMPT DETAILS</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="819"/>
+        <location filename="../toponimi_extractor.py" line="848"/>
         <source>Toponimi Extractor — modalità migliore trovata</source>
         <translation>Toponimi Extractor — best mode found</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="856"/>
+        <location filename="../toponimi_extractor.py" line="885"/>
         <source>Estrazione annullata.</source>
         <translation>Extraction canceled.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="994"/>
+        <location filename="../toponimi_extractor.py" line="1023"/>
         <source>{count} punti salvati in:
 {path} (layer '{layer}', ora con {total} toponimi in totale)
 
@@ -346,26 +356,26 @@ Area di estrazione salvata nel layer '{aoi_layer}'.</source>
 Extraction area saved in layer '{aoi_layer}'.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1077"/>
+        <location filename="../toponimi_extractor.py" line="1106"/>
         <source>Esportati {total} toponimi da {layers} layer in:
 {path}</source>
         <translation>Exported {total} toponyms from {layers} layers to:
 {path}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1096"/>
+        <location filename="../toponimi_extractor.py" line="1125"/>
         <source>Toponimi Extractor
 Versione: {version}</source>
         <translation>Toponimi Extractor
 Version: {version}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="254"/>
+        <location filename="../toponimi_extractor.py" line="255"/>
         <source>{name} (non è un layer WMS)</source>
         <translation>{name} (not a WMS layer)</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="333"/>
+        <location filename="../toponimi_extractor.py" line="362"/>
         <source>Librerie installate correttamente:
 
 {output}
@@ -378,7 +388,7 @@ Riavvia QGIS perché le modifiche abbiano effetto.</source>
 Restart QGIS for the changes to take effect.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="342"/>
+        <location filename="../toponimi_extractor.py" line="371"/>
         <source>Installazione completata con alcuni errori:
 
 {output}
@@ -391,7 +401,7 @@ Se un pacchetto è indicato come 'FALLITO' perché già in uso da QGIS, prova a 
 If a package is marked 'FAILED' because it is already in use by QGIS, try closing and reopening QGIS and repeating: the package is often already available anyway.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="564"/>
+        <location filename="../toponimi_extractor.py" line="593"/>
         <source>Ricerca della modalità migliore non avviabile: {error}
 
 Verifica di aver configurato una API key valida per il provider scelto ({provider}) nella sezione 'Fallback cloud' delle impostazioni.</source>
@@ -400,17 +410,17 @@ Verifica di aver configurato una API key valida per il provider scelto ({provide
 Check that you have configured a valid API key for the chosen provider ({provider}) in the 'Cloud fallback' section of the settings.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="571"/>
+        <location filename="../toponimi_extractor.py" line="600"/>
         <source>Ricerca della modalità migliore fallita: {error}</source>
         <translation>The search for the best mode failed: {error}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="657"/>
+        <location filename="../toponimi_extractor.py" line="686"/>
         <source>Area pronta: {tiles} quadranti, risoluzione {resolution:.4g} unità CRS/px, lato massimo {max_px} px.</source>
         <translation>Area ready: {tiles} tiles, resolution {resolution:.4g} CRS units/px, maximum side {max_px} px.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="770"/>
+        <location filename="../toponimi_extractor.py" line="799"/>
         <source>Nessuna scala testata soddisfa i criteri richiesti:
 
 {report}
@@ -423,7 +433,7 @@ Vuoi usare comunque la migliore trovata ({best}) o annullare?</source>
 Do you want to use the best one found anyway ({best}) or cancel?</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="861"/>
+        <location filename="../toponimi_extractor.py" line="890"/>
         <source>Estrazione annullata dopo {done} quadranti su {total}.
 
 Vuoi rivedere i {count} toponimi trovati finora?</source>
@@ -432,14 +442,14 @@ Vuoi rivedere i {count} toponimi trovati finora?</source>
 Do you want to review the {count} toponyms found so far?</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1089"/>
+        <location filename="../toponimi_extractor.py" line="1118"/>
         <source>Impossibile aprire la guida:
 {path}</source>
         <translation>Unable to open the help:
 {path}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="922"/>
+        <location filename="../toponimi_extractor.py" line="951"/>
         <source>Il layer "{name}" esiste già in:
 {path}
 
@@ -454,7 +464,7 @@ but it does not have the fields of a toponym layer of this plugin, so points can
 If you overwrite it, ALL its current data will be lost.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="976"/>
+        <location filename="../toponimi_extractor.py" line="1005"/>
         <source>Salvataggio non riuscito:
 {error}
 
@@ -465,34 +475,34 @@ Verifica che il GeoPackage non sia aperto in modifica o bloccato da un altro pro
 Check that the GeoPackage is not open for editing or locked by another program.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="1071"/>
+        <location filename="../toponimi_extractor.py" line="1100"/>
         <source>Esportazione non riuscita:
 {error}</source>
         <translation>Export failed:
 {error}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="478"/>
+        <location filename="../toponimi_extractor.py" line="507"/>
         <source>Impossibile convertire l'area nel sistema di riferimento del layer ({crs}): {error}</source>
         <translation>Unable to convert the area to the layer's coordinate reference system ({crs}): {error}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="662"/>
+        <location filename="../toponimi_extractor.py" line="691"/>
         <source>Quadranti ×{factor} rispetto alla griglia di base.</source>
         <translation>Tiles ×{factor} compared to the base grid.</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="750"/>
+        <location filename="../toponimi_extractor.py" line="779"/>
         <source>Calibrazione scala fallita: {error}</source>
         <translation>Scale calibration failed: {error}</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="815"/>
+        <location filename="../toponimi_extractor.py" line="844"/>
         <source>RAGIONAMENTO DELL'AGENTE</source>
         <translation>AGENT REASONING</translation>
     </message>
     <message>
-        <location filename="../toponimi_extractor.py" line="935"/>
+        <location filename="../toponimi_extractor.py" line="964"/>
         <source>Il layer "{name}" ora esiste già in:
 {path}
 con {count} toponimi.
@@ -503,6 +513,71 @@ Cosa vuoi fare dei nuovi toponimi?</source>
 with {count} toponyms.
 
 What do you want to do with the new toponyms?</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="65"/>
+        <source>Programma Tesseract</source>
+        <translation>Tesseract program</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="81"/>
+        <source>Crea una API key</source>
+        <translation>Create an API key</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="40"/>
+        <source>non installato</source>
+        <translation>not installed</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="46"/>
+        <source>installato</source>
+        <translation>installed</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="64"/>
+        <source>Scarica i dati lingua</source>
+        <translation>Download language data</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="74"/>
+        <source>impostata nel pannello Impostazioni</source>
+        <translation>set in the Settings panel</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="91"/>
+        <source>API key Claude (Anthropic)</source>
+        <translation>Claude (Anthropic) API key</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="93"/>
+        <source>API key GPT (OpenAI)</source>
+        <translation>GPT (OpenAI) API key</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="66"/>
+        <source>{version} — lingue: {languages} ({count} installate)</source>
+        <translation>{version} — languages: {languages} ({count} installed)</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="79"/>
+        <source>nessuna chiave: imposta la variabile {names} oppure inseriscila in Impostazioni → Cloud e chiavi</source>
+        <translation>no key: set the variable {names} or enter it in Settings → Cloud and keys</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="62"/>
+        <source>{version}; lingua non installata: {languages}</source>
+        <translation>{version}; language not installed: {languages}</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="57"/>
+        <source>non trovato o non utilizzabile: {error}</source>
+        <translation>not found or not usable: {error}</translation>
+    </message>
+    <message>
+        <location filename="../core/dependency_check.py" line="77"/>
+        <source>trovata nella variabile d'ambiente {name}</source>
+        <translation>found in the environment variable {name}</translation>
     </message>
     <message>
         <location filename="../core/usage_tracker.py" line="136"/>
@@ -980,277 +1055,304 @@ Only equal or very similar names read from two different tiles in their overlap 
 {error}</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="63"/>
+        <location filename="../ui/settings_dialog.py" line="67"/>
         <source>Motore OCR primario</source>
         <translation>Primary OCR engine</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="65"/>
+        <location filename="../ui/settings_dialog.py" line="69"/>
         <source>Tesseract locale</source>
         <translation>Local Tesseract</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="66"/>
+        <location filename="../ui/settings_dialog.py" line="70"/>
         <source>Solo cloud (Claude/GPT)</source>
         <translation>Cloud only (Claude/GPT)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="82"/>
+        <location filename="../ui/settings_dialog.py" line="86"/>
         <source>Sfoglia...</source>
         <translation>Browse...</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="84"/>
+        <location filename="../ui/settings_dialog.py" line="88"/>
         <source>Rileva automaticamente</source>
         <translation>Detect automatically</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="90"/>
+        <location filename="../ui/settings_dialog.py" line="94"/>
         <source>Percorso eseguibile:</source>
         <translation>Executable path:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="92"/>
+        <location filename="../ui/settings_dialog.py" line="96"/>
         <source>Lingua (codice Tesseract):</source>
         <translation>Language (Tesseract code):</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="93"/>
+        <location filename="../ui/settings_dialog.py" line="97"/>
         <source>Verifica Tesseract</source>
         <translation>Check Tesseract</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="114"/>
+        <location filename="../ui/settings_dialog.py" line="118"/>
         <source>Fallback cloud</source>
         <translation>Cloud fallback</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="117"/>
+        <location filename="../ui/settings_dialog.py" line="121"/>
         <source>Abilita fallback cloud per testo a bassa confidenza</source>
         <translation>Enable cloud fallback for low-confidence text</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="125"/>
+        <location filename="../ui/settings_dialog.py" line="129"/>
         <source>Entrambi</source>
         <translation>Both</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="126"/>
+        <location filename="../ui/settings_dialog.py" line="130"/>
         <source>Provider:</source>
         <translation>Provider:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="132"/>
+        <location filename="../ui/settings_dialog.py" line="136"/>
         <source>Soglia confidenza minima:</source>
         <translation>Minimum confidence threshold:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="134"/>
+        <location filename="../ui/settings_dialog.py" line="138"/>
         <source>impostata</source>
         <translation>set</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="134"/>
+        <location filename="../ui/settings_dialog.py" line="138"/>
         <source>NON impostata</source>
         <translation>NOT set</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="141"/>
+        <location filename="../ui/settings_dialog.py" line="145"/>
         <source>Variabile d'ambiente API key Claude:</source>
         <translation>Claude API key environment variable:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="145"/>
+        <location filename="../ui/settings_dialog.py" line="149"/>
         <source>Override manuale (vuoto = usa la variabile d'ambiente sopra)</source>
         <translation>Manual override (empty = use the environment variable above)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="146"/>
+        <location filename="../ui/settings_dialog.py" line="150"/>
         <source>Override API key Claude:</source>
         <translation>Claude API key override:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="151"/>
+        <location filename="../ui/settings_dialog.py" line="155"/>
         <source>Override API key GPT:</source>
         <translation>GPT API key override:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="161"/>
+        <location filename="../ui/settings_dialog.py" line="165"/>
         <source>Modello Claude:</source>
         <translation>Claude model:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="171"/>
+        <location filename="../ui/settings_dialog.py" line="175"/>
         <source>Modello GPT:</source>
         <translation>GPT model:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="178"/>
+        <location filename="../ui/settings_dialog.py" line="182"/>
         <source>Quadranti</source>
         <translation>Tiles</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="180"/>
+        <location filename="../ui/settings_dialog.py" line="184"/>
         <source>Risoluzione: quanto ingrandire la carta</source>
         <translation>Resolution: how much to magnify the map</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="186"/>
+        <location filename="../ui/settings_dialog.py" line="190"/>
         <source>Automatico (max 1400, adatto all'OCR)</source>
         <translation>Automatic (max 1400, suited to OCR)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="187"/>
+        <location filename="../ui/settings_dialog.py" line="191"/>
         <source>Dimensione max tile (px):</source>
         <translation>Max tile size (px):</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="189"/>
+        <location filename="../ui/settings_dialog.py" line="193"/>
         <source>Automatica — lo zoom della mappa quando disegni l'area</source>
         <translation>Automatic — the map zoom when you draw the area</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="190"/>
+        <location filename="../ui/settings_dialog.py" line="194"/>
         <source>Scala (es. 1:2000)</source>
         <translation>Scale (e.g. 1:2000)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="191"/>
+        <location filename="../ui/settings_dialog.py" line="195"/>
         <source>Risoluzione manuale</source>
         <translation>Manual resolution</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="193"/>
+        <location filename="../ui/settings_dialog.py" line="197"/>
         <source>Calibrazione automatica — prova alcune scale con Tesseract</source>
         <translation>Automatic calibration — tries a few scales with Tesseract</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="196"/>
+        <location filename="../ui/settings_dialog.py" line="200"/>
         <source>AI DRIVEN — decide un agente AI (max 5 prove)</source>
         <translation>AI DRIVEN — an AI agent decides (max 5 trials)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="214"/>
+        <location filename="../ui/settings_dialog.py" line="218"/>
         <source>Denominatore scala:</source>
         <translation>Scale denominator:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="226"/>
+        <location filename="../ui/settings_dialog.py" line="230"/>
         <source>Risoluzione (unità CRS/px):</source>
         <translation>Resolution (CRS units/px):</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="234"/>
+        <location filename="../ui/settings_dialog.py" line="238"/>
         <source>Confidenza minima:</source>
         <translation>Minimum confidence:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="239"/>
+        <location filename="../ui/settings_dialog.py" line="243"/>
         <source>Parole minime nel test:</source>
         <translation>Minimum words in the test:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="246"/>
+        <location filename="../ui/settings_dialog.py" line="250"/>
         <source>Agente decisionale:</source>
         <translation>Decision agent:</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="249"/>
+        <location filename="../ui/settings_dialog.py" line="253"/>
         <source>L'agente guarda un tile di prova al centro dell'area, legge il risultato OCR e decide da solo risoluzione/tile/overlap/motore, fino a 5 tentativi. Richiede una API key valida (Claude o GPT, a seconda della scelta sopra) già configurata nella sezione Fallback cloud. Viene proposta dopo ogni selezione dell'area, qualunque sia la modalità scelta qui.</source>
         <translation>The agent looks at a test tile at the center of the area, reads the OCR result and decides on its own resolution/tile/overlap/engine, in up to 5 attempts. It requires a valid API key (Claude or GPT, depending on the choice above) already configured in the Cloud fallback section. It is offered after every area selection, whatever mode is chosen here.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="269"/>
+        <location filename="../ui/settings_dialog.py" line="273"/>
         <source>Sovrapposizione tile (px):</source>
         <translation>Tile overlap (px):</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="275"/>
+        <location filename="../ui/settings_dialog.py" line="279"/>
         <source>Un quadrante è un'immagine della carta inviata al motore di lettura. Lascia "Automatico" se non hai un motivo preciso per cambiarlo.</source>
         <translation>A tile is an image of the map sent to the reading engine. Leave "Automatic" if you have no specific reason to change it.</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="286"/>
+        <location filename="../ui/settings_dialog.py" line="290"/>
         <source>Risoluzione</source>
         <translation>Resolution</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="287"/>
+        <location filename="../ui/settings_dialog.py" line="291"/>
         <source>Motore di lettura</source>
         <translation>Reading engine</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="288"/>
+        <location filename="../ui/settings_dialog.py" line="292"/>
         <source>Cloud e chiavi</source>
         <translation>Cloud and keys</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="308"/>
+        <location filename="../ui/settings_dialog.py" line="304"/>
+        <source>Ricontrolla</source>
+        <translation>Re-check</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="306"/>
+        <source>Installa librerie mancanti</source>
+        <translation>Install missing libraries</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="313"/>
+        <source>Requisiti</source>
+        <translation>Requirements</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="365"/>
+        <source>Riavvia QGIS perché le modifiche abbiano effetto.</source>
+        <translation>Restart QGIS for the changes to take effect.</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="376"/>
         <source>Seleziona l'eseguibile di Tesseract</source>
         <translation>Select the Tesseract executable</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="80"/>
+        <location filename="../ui/settings_dialog.py" line="84"/>
         <source>(vuoto = PATH di sistema)</source>
         <translation>(empty = system PATH)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="310"/>
+        <location filename="../ui/settings_dialog.py" line="378"/>
         <source>Tutti i file (*)</source>
         <translation>All files (*)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="39"/>
+        <location filename="../ui/settings_dialog.py" line="43"/>
         <source>Toponimi Extractor v{version} - Impostazioni</source>
         <translation>Toponimi Extractor v{version} - Settings</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="103"/>
+        <location filename="../ui/settings_dialog.py" line="107"/>
         <source>Tesseract non è installato? </source>
         <translation>Tesseract is not installed? </translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="150"/>
+        <location filename="../ui/settings_dialog.py" line="154"/>
         <source>Da variabile d'ambiente OPENAI_API_KEY ({state})</source>
         <translation>From environment variable OPENAI_API_KEY ({state})</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="320"/>
+        <location filename="../ui/settings_dialog.py" line="356"/>
+        <source>Installare ora: {packages}?
+(richiede connessione internet)</source>
+        <translation>Install now: {packages}?
+(internet connection required)</translation>
+    </message>
+    <message>
+        <location filename="../ui/settings_dialog.py" line="388"/>
         <source>Tesseract non trovato nel PATH né nelle cartelle abituali. Usa "Sfoglia...".</source>
         <translation>Tesseract not found in the PATH or in the usual folders. Use "Browse...".</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="340"/>
+        <location filename="../ui/settings_dialog.py" line="408"/>
         <source>{version} — lingue installate: {languages}</source>
         <translation>{version} — installed languages: {languages}</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="359"/>
+        <location filename="../ui/settings_dialog.py" line="427"/>
         <source>≈ {value:.4f} m/pixel (per CRS proiettati in metri; in gradi il calcolo non è valido)</source>
         <translation>≈ {value:.4f} m/pixel (for projected CRSs in meters; for degrees the calculation is not valid)</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="105"/>
+        <location filename="../ui/settings_dialog.py" line="109"/>
         <source>Installer già pronti</source>
         <translation>Ready-made installers</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="156"/>
+        <location filename="../ui/settings_dialog.py" line="160"/>
         <source>{label} — ${in_price:.2f}/${out_price:.2f} per 1M token</source>
         <translation>{label} — ${in_price:.2f}/${out_price:.2f} per 1M tokens</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="344"/>
+        <location filename="../ui/settings_dialog.py" line="412"/>
         <source>Lingua non installata: {languages}</source>
         <translation>Language not installed: {languages}</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="104"/>
+        <location filename="../ui/settings_dialog.py" line="108"/>
         <source>Istruzioni di installazione</source>
         <translation>Installation instructions</translation>
     </message>
     <message>
-        <location filename="../ui/settings_dialog.py" line="334"/>
+        <location filename="../ui/settings_dialog.py" line="402"/>
         <source>Tesseract non utilizzabile: {error}</source>
         <translation>Tesseract not usable: {error}</translation>
     </message>

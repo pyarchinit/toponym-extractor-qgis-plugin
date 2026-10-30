@@ -5,10 +5,13 @@ QGIS ha un proprio interprete Python; queste librerie potrebbero non essere
 disponibili anche se pip le vede installate a livello di sistema (es. quando
 il sys.path del processo QGIS non include lo user site-packages)."""
 
+import importlib.metadata
 import importlib.util
 import os
 import subprocess
 import sys
+
+from .i18n import tr
 
 OPTIONAL_PACKAGES = [
     ("pytesseract", "pytesseract"),
@@ -16,6 +19,80 @@ OPTIONAL_PACKAGES = [
     ("anthropic", "anthropic"),
     ("openai", "openai"),
 ]
+
+
+PYPI_URL = "https://pypi.org/project/{}/"
+ANTHROPIC_KEYS_URL = "https://console.anthropic.com/settings/keys"
+OPENAI_KEYS_URL = "https://platform.openai.com/api-keys"
+OPENAI_ENV_VARS = ("OPENAI_API_KEY",)
+ANTHROPIC_ENV_VARS = ("ANTHROPIC_API_KEY", "CLAUDE_API_KEY")
+
+OK, WARN, MISSING = "ok", "warn", "missing"
+
+
+def _item(key, label, status, detail, url=None, url_label=None, pip_name=None):
+    return {"key": key, "label": label, "status": status, "detail": detail,
+            "url": url, "url_label": url_label, "pip_name": pip_name}
+
+
+def _package_item(module_name, pip_name):
+    if importlib.util.find_spec(module_name) is None:
+        return _item(module_name, pip_name, MISSING, tr("non installato"),
+                     PYPI_URL.format(pip_name), "PyPI", pip_name)
+    try:
+        version = importlib.metadata.version(pip_name)
+    except importlib.metadata.PackageNotFoundError:
+        version = ""
+    return _item(module_name, pip_name, OK, tr("installato") + (f" ({version})" if version else ""))
+
+
+def _tesseract_item(cmd, lang):
+    from ..ocr import tesseract_engine
+
+    guide = tesseract_engine.PREBUILT_INSTALLERS_URL
+    try:
+        info = tesseract_engine.probe(cmd or tesseract_engine.find_tesseract())
+    except tesseract_engine.TesseractNotAvailable as exc:
+        return _item("tesseract", tr("Programma Tesseract"), MISSING,
+                     tr("non trovato o non utilizzabile: {error}").format(error=exc),
+                     guide, tr("Scarica Tesseract"))
+    missing = [c for c in (lang or "").split("+") if c and c not in info["languages"]]
+    if missing:
+        return _item("tesseract", tr("Programma Tesseract"), WARN,
+                     tr("{version}; lingua non installata: {languages}").format(
+                         version=info["version"], languages=", ".join(missing)),
+                     tesseract_engine.TESSDATA_URL, tr("Scarica i dati lingua"))
+    return _item("tesseract", tr("Programma Tesseract"), OK,
+                 tr("{version} — lingue: {languages} ({count} installate)").format(
+                     version=info["version"], languages=(lang or "-"), count=len(info["languages"])))
+
+
+def _key_item(key, label, explicit_key, env_names, url):
+    """Stato di una API key: da campo manuale o da variabile d'ambiente.
+    Il valore della chiave non viene mai restituito."""
+    if explicit_key:
+        return _item(key, label, OK, tr("impostata nel pannello Impostazioni"))
+    for name in env_names:
+        if os.environ.get(name):
+            return _item(key, label, OK, tr("trovata nella variabile d'ambiente {name}").format(name=name))
+    return _item(key, label, WARN,
+                 tr("nessuna chiave: imposta la variabile {names} oppure inseriscila in Impostazioni → Cloud e chiavi").format(
+                     names=" / ".join(env_names)),
+                 url, tr("Crea una API key"))
+
+
+def requirements_report(tesseract_cmd=None, tesseract_lang="ita", claude_key=None,
+                        claude_env_var=None, openai_key=None):
+    """Elenco dei requisiti con stato OK/WARN/MISSING, dettaglio e link.
+    Non richiede QGIS e non solleva eccezioni."""
+    env_names = ((claude_env_var,) if claude_env_var else ()) + ANTHROPIC_ENV_VARS
+    items = [_tesseract_item(tesseract_cmd, tesseract_lang)]
+    items += [_package_item(m, p) for m, p in OPTIONAL_PACKAGES]
+    items.append(_key_item("claude_key", tr("API key Claude (Anthropic)"), claude_key,
+                           tuple(dict.fromkeys(env_names)), ANTHROPIC_KEYS_URL))
+    items.append(_key_item("openai_key", tr("API key GPT (OpenAI)"), openai_key,
+                           OPENAI_ENV_VARS, OPENAI_KEYS_URL))
+    return items
 
 
 def missing_packages():

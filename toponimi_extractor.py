@@ -216,6 +216,7 @@ class ToponimiExtractorPlugin:
         self._refresh_panel()
 
         self._check_dependencies()
+        self._check_tesseract()
 
     def _make_action(self, icon, text, tooltip, slot, enabled=True):
         """Crea un'azione condivisa da barra, pannello e menu plugin."""
@@ -302,6 +303,34 @@ class ToponimiExtractorPlugin:
         if self.results_dock is not None:
             self.results_dock.show()
             self.results_dock.raise_()
+
+    def _check_tesseract(self):
+        """Se il motore primario è Tesseract ma il programma non c'è,
+        avvisa nella barra messaggi con un pulsante per scaricarlo."""
+        from .core import dependency_check
+        from .ocr import tesseract_engine
+        from qgis.PyQt.QtWidgets import QPushButton
+
+        ocr = load_ocr_settings()["ocr"]
+        if not ocr["use_tesseract"]:
+            return
+        item = dependency_check.requirements_report(
+            tesseract_cmd=ocr["tesseract_cmd"], tesseract_lang=ocr["tesseract_lang"]
+        )[0]
+        if item["status"] != dependency_check.MISSING:
+            return
+        bar = self.iface.messageBar()
+        message = bar.createMessage(
+            "Toponimi Extractor",
+            tr("Tesseract non trovato: l'OCR locale non funzionerà. Installalo oppure indica il percorso in Impostazioni."),
+        )
+        download = QPushButton(tr("Scarica Tesseract"))
+        download.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(tesseract_engine.PREBUILT_INSTALLERS_URL)))
+        settings = QPushButton(tr("Impostazioni"))
+        settings.clicked.connect(self.open_settings_dialog)
+        message.layout().addWidget(download)
+        message.layout().addWidget(settings)
+        bar.pushWidget(message, Qgis.MessageLevel.Warning)
 
     def _check_dependencies(self):
         from .core import dependency_check
