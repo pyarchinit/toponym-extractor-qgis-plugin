@@ -6,6 +6,10 @@ calcolare un punto geografico distinto per ciascun toponimo presente nel
 quadrante.
 """
 
+import os
+import shutil
+import subprocess
+
 ENGINE_NAME = "tesseract"
 
 # Dove procurarsi il programma Tesseract (il plugin installa solo la libreria
@@ -20,6 +24,61 @@ INSTALL_HINT = (
 
 class TesseractNotAvailable(Exception):
     pass
+
+
+def _candidate_paths():
+    """Posizioni tipiche del binario, oltre al PATH di sistema."""
+    local_appdata = os.environ.get("LOCALAPPDATA", "")
+    return [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        os.path.join(local_appdata, "Programs", "Tesseract-OCR", "tesseract.exe") if local_appdata else "",
+        r"C:\OSGeo4W\bin\tesseract.exe",
+        "/opt/homebrew/bin/tesseract",
+        "/usr/local/bin/tesseract",
+        "/usr/bin/tesseract",
+    ]
+
+
+def find_tesseract():
+    """Percorso del binario Tesseract trovato nel PATH o nelle posizioni
+    tipiche, oppure None."""
+    found = shutil.which("tesseract")
+    if found:
+        return found
+    for path in _candidate_paths():
+        if path and os.path.isfile(path):
+            return path
+    return None
+
+
+def probe(cmd=None, timeout=20):
+    """Interroga il binario (`cmd`, o quello nel PATH se vuoto) e ritorna
+    {"version": str, "languages": [codici]}. Non richiede pytesseract.
+    Solleva TesseractNotAvailable se il binario non parte."""
+    exe = cmd or "tesseract"
+    flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
+    def run(arg):
+        try:
+            done = subprocess.run(
+                [exe, arg], capture_output=True, text=True, timeout=timeout, creationflags=flags
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise TesseractNotAvailable(str(exc)) from exc
+        return (done.stdout or "") + (done.stderr or "")
+
+    version_output = run("--version").strip()
+    if not version_output:
+        raise TesseractNotAvailable("Nessuna risposta dal programma.")
+    version = version_output.splitlines()[0].strip()
+
+    languages = [
+        line.strip()
+        for line in run("--list-langs").splitlines()
+        if line.strip() and not line.lower().startswith("list of available")
+    ]
+    return {"version": version, "languages": languages}
 
 
 def _import_deps():

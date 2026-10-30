@@ -2,7 +2,7 @@
 
 import os
 
-from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -20,6 +20,8 @@ from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QTabWidget,
     QWidget,
+    QPushButton,
+    QFileDialog,
 )
 
 from ..core.i18n import tr
@@ -77,9 +79,26 @@ class SettingsDialog(QDialog):
         self.tesseract_cmd_edit.setPlaceholderText(
             r"C:\Program Files\Tesseract-OCR\tesseract.exe " + tr("(vuoto = PATH di sistema)")
         )
-        tesseract_form.addRow(tr("Percorso eseguibile:"), self.tesseract_cmd_edit)
+        browse_btn = QPushButton(tr("Sfoglia..."))
+        browse_btn.clicked.connect(self._browse_tesseract)
+        detect_btn = QPushButton(tr("Rileva automaticamente"))
+        detect_btn.clicked.connect(self._detect_tesseract)
+        path_row = QHBoxLayout()
+        path_row.addWidget(self.tesseract_cmd_edit, 1)
+        path_row.addWidget(browse_btn)
+        path_row.addWidget(detect_btn)
+        tesseract_form.addRow(tr("Percorso eseguibile:"), path_row)
         self.tesseract_lang_edit = QLineEdit("ita")
         tesseract_form.addRow(tr("Lingua (codice Tesseract):"), self.tesseract_lang_edit)
+        test_btn = QPushButton(tr("Verifica Tesseract"))
+        test_btn.clicked.connect(self._test_tesseract)
+        self.tesseract_status_label = QLabel("")
+        self.tesseract_status_label.setWordWrap(True)
+        self.tesseract_status_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        status_row = QHBoxLayout()
+        status_row.addWidget(test_btn)
+        status_row.addWidget(self.tesseract_status_label, 1)
+        tesseract_form.addRow("", status_row)
         tesseract_links = QLabel(
             tr("Tesseract non è installato? ")
             + f'<a href="{tesseract_engine.INSTALL_GUIDE_URL}">{tr("Istruzioni di installazione")}</a> · '
@@ -278,6 +297,52 @@ class SettingsDialog(QDialog):
         layout.addWidget(button_box)
 
         self.accepted.connect(self._save_settings)
+
+    def _browse_tesseract(self):
+        current = self.tesseract_cmd_edit.text().strip()
+        start_dir = os.path.dirname(current) if current else (
+            os.path.dirname(tesseract_engine.find_tesseract() or "") or os.path.expanduser("~")
+        )
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            tr("Seleziona l'eseguibile di Tesseract"),
+            start_dir,
+            "Tesseract (tesseract*);;" + tr("Tutti i file (*)"),
+        )
+        if path:
+            self.tesseract_cmd_edit.setText(os.path.normpath(path))
+            self._test_tesseract()
+
+    def _detect_tesseract(self):
+        path = tesseract_engine.find_tesseract()
+        if not path:
+            self.tesseract_status_label.setText(
+                "✗ " + tr("Tesseract non trovato nel PATH né nelle cartelle abituali. Usa \"Sfoglia...\".")
+            )
+            return
+        self.tesseract_cmd_edit.setText(os.path.normpath(path))
+        self._test_tesseract()
+
+    def _test_tesseract(self):
+        """Prova il percorso indicato (o il PATH, se vuoto) e mostra versione
+        e lingue installate; segnala le lingue richieste che mancano."""
+        cmd = self.tesseract_cmd_edit.text().strip() or None
+        try:
+            info = tesseract_engine.probe(cmd)
+        except tesseract_engine.TesseractNotAvailable as exc:
+            self.tesseract_status_label.setText(
+                "✗ " + tr("Tesseract non utilizzabile: {error}").format(error=exc)
+            )
+            return
+
+        requested = [code for code in self.tesseract_lang_edit.text().strip().split("+") if code]
+        missing = [code for code in requested if code not in info["languages"]]
+        text = "✓ " + tr("{version} — lingue installate: {languages}").format(
+            version=info["version"], languages=", ".join(info["languages"]) or "-"
+        )
+        if missing:
+            text += "\n⚠ " + tr("Lingua non installata: {languages}").format(languages=", ".join(missing))
+        self.tesseract_status_label.setText(text)
 
     def _update_resolution_mode(self):
         self.scale_spin.setEnabled(self.radio_resolution_scale.isChecked())
