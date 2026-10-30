@@ -1,0 +1,25 @@
+[general]
+name=Toponimi Extractor
+qgisMinimumVersion=3.28
+qgisMaximumVersion=4.99
+description=Estrazione automatica di toponimi ed etichette testuali da WMS raster tramite OCR a cascata
+version=0.8.9
+author=Luca Mandolesi
+email=mandoluca@gmail.com
+
+about=Plugin per QGIS che permette di selezionare un'area su un layer WMS raster, scomporla in quadranti alla risoluzione ottimale del servizio, ed eseguire il riconoscimento automatico di toponimi e altre etichette testuali (nomi di fiumi, luoghi, ecc.) tramite una pipeline OCR a cascata (Tesseract locale, con fallback a modelli vision Claude/GPT per testo inclinato o di bassa qualita). I risultati (testo, coordinate, fonte, motore OCR, confidenza) vengono salvati in un layer puntuale GeoPackage.
+
+tracker=
+repository=
+homepage=
+
+tags=wms,ocr,toponimi,raster,geopackage,text extraction
+
+category=Vector
+icon=icons/icon.svg
+
+experimental=True
+deprecated=False
+
+server=False
+hasProcessingProvider=no

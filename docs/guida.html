@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toponimi Extractor - Guida</title>
+<style>
+  :root {
+    --bg: #fbfaf7; --card: #ffffff; --text: #22262b; --muted: #5d6670;
+    --line: #dfe3e8; --accent: #1f5fbf; --accent-soft: #e8f0fc;
+    --ok: #1d7a46; --ok-soft: #e5f4ec; --warn: #9a5b00; --warn-soft: #fdf1dc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16191d; --card: #1e2227; --text: #e6e9ec; --muted: #9aa4af;
+      --line: #313840; --accent: #7fb0ff; --accent-soft: #1d2a40;
+      --ok: #6fd39a; --ok-soft: #183226; --warn: #f0b860; --warn-soft: #3a2c12;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.55 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.3rem; margin: 44px 0 6px; padding-top: 14px; border-top: 2px solid var(--line); }
+  h3 { font-size: 1.02rem; margin: 0 0 4px; }
+  p { margin: 6px 0; }
+  .lead { color: var(--muted); margin-bottom: 20px; }
+  .intro { color: var(--muted); margin: 0 0 14px; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 8px; }
+  nav a {
+    text-decoration: none; color: var(--accent); background: var(--accent-soft);
+    padding: 5px 12px; border-radius: 999px; font-size: 0.9rem;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin: 10px 0;
+  }
+  .why { color: var(--muted); }
+  .why b { color: var(--text); }
+  .tag {
+    display: inline-block; font-size: 0.74rem; font-weight: 600; padding: 2px 8px;
+    border-radius: 999px; margin-left: 6px; vertical-align: 2px;
+  }
+  .tag.def { background: var(--ok-soft); color: var(--ok); }
+  .tag.cost { background: var(--warn-soft); color: var(--warn); }
+  .note {
+    background: var(--warn-soft); border-left: 4px solid var(--warn);
+    padding: 10px 14px; border-radius: 6px; margin: 12px 0;
+  }
+  ol.steps { padding-left: 22px; margin: 8px 0; }
+  ol.steps li { margin: 6px 0; }
+  .tablewrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.95rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  a { color: var(--accent); }
+  code { background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.88rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Toponimi Extractor</h1>
+<p class="lead">Legge i nomi scritti su una carta WMS (paesi, monti, fiumi, località) e li trasforma in punti di un GeoPackage.</p>
+
+<nav>
+  <a href="#uso">Come si usa</a>
+  <a href="#risoluzione">Risoluzione</a>
+  <a href="#motore">Motore di lettura</a>
+  <a href="#cloud">Cloud e chiavi</a>
+  <a href="#quadranti">Quadranti</a>
+  <a href="#risultati">Tabella risultati</a>
+  <a href="#scelta">Cosa scegliere</a>
+  <a href="#problemi">Se qualcosa non va</a>
+</nav>
+
+<h2 id="uso">Come si usa, in 6 passi</h2>
+<ol class="steps">
+  <li><b>Seleziona la carta</b> nel pannello Layer. Il plugin legge il layer <i>selezionato</i>, non quello che vedi: controlla la riga "Layer attivo" nel pannello del plugin.</li>
+  <li><b>Seleziona area</b>: scegli dove salvare, poi disegna un rettangolo sulla mappa (Esc per annullare). La finestra riparte dall'ultimo file usato: se contiene già toponimi propone di <b>aggiungere</b> a quel layer, altrimenti di crearne uno nuovo. La riga in grassetto dice sempre cosa succederà; nessun dato esistente viene cancellato.</li>
+  <li><b>"Vuoi che trovi la modalità migliore?"</b> Con <b>Sì</b> un agente AI fa alcune letture di prova e sceglie i parametri. Con <b>No</b> valgono le tue impostazioni.</li>
+  <li><b>Guarda l'anteprima</b>: il contorno rosso è la tua area, i riquadri blu sono i quadranti che verranno letti. Se hai dubbi su numeri o scritte piccole, premi <b>Raddoppia quadranti</b>.</li>
+  <li><b>Estrai toponimi</b>: parte la lettura. Puoi fermarla con <b>Annulla estrazione</b>; i nomi già trovati non vanno persi.</li>
+  <li><b>Controlla la tabella</b>, correggi quello che serve e premi <b>OK - Crea punti nel GeoPackage</b>.</li>
+</ol>
+<div class="note"><b>Un quadrante</b> è un'immagine della carta inviata al motore di lettura. Più quadranti = più dettaglio, più tempo e, con il cloud, più costo. L'obiettivo è usarne il minimo che permette di leggere bene.</div>
+
+<p>Le impostazioni si aprono dal pulsante <b>Impostazioni</b> e sono divise in quattro schede, con gli stessi nomi delle sezioni qui sotto: <b>Risoluzione</b>, <b>Motore di lettura</b>, <b>Cloud e chiavi</b>, <b>Quadranti</b>.</p>
+
+<h2 id="risoluzione">Risoluzione: quanto ingrandire la carta</h2>
+<p class="intro">È l'impostazione che conta di più. Troppo poco dettaglio e le scritte non si leggono; troppo e i quadranti si moltiplicano senza motivo.</p>
+
+<div class="card">
+  <h3>Automatica <span class="tag def">consigliata per iniziare</span></h3>
+  <p>Legge la carta allo stesso ingrandimento che avevi a schermo quando hai disegnato l'area.</p>
+  <p class="why"><b>Perché:</b> se riesci a leggere i nomi a video, li legge anche il plugin. Se l'area è piccola e sta in un solo quadrante, viene comunque ingrandita fino a riempirlo, quindi disegnare a mappa rimpicciolita non peggiora il risultato.</p>
+</div>
+
+<div class="card">
+  <h3>Scala (es. 1:2000)</h3>
+  <p>Fissi tu la scala di lettura. Numero più piccolo = più dettaglio.</p>
+  <p class="why"><b>Perché:</b> utile quando conosci già la carta e vuoi lo stesso risultato ogni volta. Vale solo per carte con coordinate in metri. Attenzione: non coincide sempre con la scala che QGIS mostra in basso, che dipende dal tuo schermo.</p>
+</div>
+
+<div class="card">
+  <h3>Risoluzione manuale</h3>
+  <p>Scrivi direttamente quante unità di mappa corrispondono a un pixel (per esempio 1,5 metri per pixel).</p>
+  <p class="why"><b>Perché:</b> è la scelta per chi ha già trovato il valore giusto con una prova precedente, o lavora con carte in gradi dove la scala non si può usare.</p>
+</div>
+
+<div class="card">
+  <h3>Calibrazione automatica</h3>
+  <p>Prova alcune scale fisse, dalla più larga alla più dettagliata, e si ferma alla prima che Tesseract legge bene.</p>
+  <p class="why"><b>Perché:</b> è gratuita, non usa il cloud. Richiede Tesseract installato e funziona solo con scritte stampate e dritte. La griglia dei quadranti si conosce solo all'avvio dell'estrazione.</p>
+</div>
+
+<div class="card">
+  <h3>AI DRIVEN <span class="tag cost">usa il cloud</span></h3>
+  <p>Un agente AI guarda l'area, prova a leggerla e decide da solo risoluzione, quadranti e motore, in al massimo 5 tentativi.</p>
+  <p class="why"><b>Perché:</b> è la scelta quando non conosci la carta. Parte sempre dalla soluzione più economica (tutta l'area in un quadrante) e aumenta il dettaglio solo se non riesce a leggere. È la stessa ricerca che parte rispondendo <b>Sì</b> alla domanda dopo la selezione, qualunque modalità sia impostata qui.</p>
+</div>
+
+<div class="note"><b>Protezione sempre attiva:</b> in nessuna modalità l'area viene letta più piccola di un quadrante pieno. Rimpicciolire oltre non fa risparmiare nulla e rende le scritte illeggibili.</div>
+
+<h2 id="motore">Motore di lettura</h2>
+<p class="intro">Chi legge materialmente le scritte nell'immagine.</p>
+
+<div class="card">
+  <h3>Tesseract locale</h3>
+  <p>Un programma gratuito installato sul tuo computer. Se un quadrante viene letto male, può intervenire il cloud come riserva.</p>
+  <p class="why"><b>Perché:</b> non costa nulla e non invia dati all'esterno. Va bene per testo stampato, orizzontale e ben contrastato. Legge una parola alla volta ("San" e "Martino" diventano due punti) e fatica con scritte curve o inclinate.</p>
+</div>
+
+<div class="card">
+  <h3>Solo cloud (Claude / GPT) <span class="tag cost">a pagamento</span></h3>
+  <p>Ogni quadrante viene letto direttamente da un modello AI.</p>
+  <p class="why"><b>Perché:</b> legge scritte curve, ruotate, in corsivo e su carte storiche, e tiene insieme i nomi su più righe. È la scelta giusta per carte IGM e cartografia antica. Ogni quadrante è una chiamata a pagamento.</p>
+</div>
+
+<div class="card">
+  <h3>Installare Tesseract</h3>
+  <p>Tesseract è un programma a parte: il plugin non lo installa. Segui le
+  <a href="https://github.com/tesseract-ocr/tesseract#installing-tesseract">istruzioni di installazione ufficiali</a> oppure scarica uno degli
+  <a href="https://tesseract-ocr.github.io/tessdoc/Installation.html">installer già pronti</a> per il tuo sistema, e durante l'installazione aggiungi la lingua italiana.</p>
+  <p class="why"><b>Perché serve:</b> senza Tesseract funzionano solo la lettura via cloud e la ricerca AI; la "Calibrazione automatica" non può partire.</p>
+</div>
+
+<div class="card">
+  <h3>Percorso e lingua di Tesseract</h3>
+  <p><b>Percorso:</b> dove si trova <code>tesseract.exe</code>; lascia vuoto se è già nel PATH di sistema. <b>Lingua:</b> <code>ita</code> per l'italiano.</p>
+  <p class="why"><b>Perché:</b> con la lingua sbagliata Tesseract "corregge" i nomi verso parole di un altro dizionario. Puoi combinarne più d'una, per esempio <code>ita+lat</code>.</p>
+</div>
+
+<h2 id="cloud">Cloud: riserva, provider, chiavi</h2>
+
+<div class="card">
+  <h3>Abilita fallback cloud</h3>
+  <p>Se Tesseract non trova nulla o legge con poca sicurezza, il quadrante viene riletto dal cloud.</p>
+  <p class="why"><b>Perché:</b> paghi solo i quadranti difficili invece di tutti. Se è spento, il cloud non viene mai chiamato (tranne in modalità "Solo cloud", dove è l'unico motore).</p>
+</div>
+
+<div class="card">
+  <h3>Soglia confidenza minima <span class="tag def">60% di default</span></h3>
+  <p>Sotto questa sicurezza media di Tesseract scatta la rilettura con il cloud.</p>
+  <p class="why"><b>Perché:</b> più alta = più quadranti passano al cloud (più qualità, più costo). Più bassa = ci si fida di più di Tesseract.</p>
+</div>
+
+<div class="card">
+  <h3>Provider</h3>
+  <p><b>Claude</b> o <b>GPT</b>: scegli quello di cui hai la chiave.</p>
+  <p class="why"><b>Perché non "Entrambi":</b> ogni quadrante viene letto due volte, il costo raddoppia e gli stessi nomi compaiono due volte in tabella. Usalo solo per confrontare i due motori su un'area piccola.</p>
+</div>
+
+<div class="card">
+  <h3>Modello</h3>
+  <p>Per ogni provider puoi scegliere tra modelli più economici e più precisi; accanto a ciascuno c'è il prezzo.</p>
+  <p class="why"><b>Perché:</b> parti dal più economico. Passa a uno più preciso solo se vedi nomi sbagliati o mancanti su scritte piccole o rovinate.</p>
+</div>
+
+<div class="card">
+  <h3>Chiave API</h3>
+  <p>Il plugin la legge da una variabile d'ambiente (<code>ANTHROPIC_API_KEY</code> o <code>CLAUDE_API_KEY</code> per Claude, <code>OPENAI_API_KEY</code> per GPT). In alternativa puoi scriverla nel campo "Override".</p>
+  <p class="why"><b>Perché preferire la variabile d'ambiente:</b> la chiave scritta nel campo viene salvata in chiaro nelle impostazioni di QGIS, leggibile da chiunque usi il tuo profilo.</p>
+</div>
+
+<h2 id="quadranti">Quadranti</h2>
+
+<div class="card">
+  <h3>Dimensione massima del quadrante <span class="tag def">Automatico = 1400 pixel</span></h3>
+  <p>Il lato più lungo di ogni immagine inviata al motore.</p>
+  <p class="why"><b>Perché lasciarla automatica:</b> oltre circa 1500 pixel i modelli cloud rimpiccioliscono l'immagine da soli e le scritte piccole si perdono. Più piccola, invece, moltiplica i quadranti.</p>
+</div>
+
+<div class="card">
+  <h3>Sovrapposizione <span class="tag def">200 pixel di default</span></h3>
+  <p>Di quanto i quadranti vicini si sovrappongono lungo i bordi.</p>
+  <p class="why"><b>Perché:</b> senza sovrapposizione un nome a cavallo di due quadranti verrebbe tagliato a metà. Il rovescio è che lo stesso nome può essere letto due volte: si rimedia con "Cerca duplicati" nella tabella. Con un solo quadrante non serve e non viene applicata.</p>
+</div>
+
+<div class="card">
+  <h3>Raddoppia / Dimezza quadranti (pulsanti nel pannello)</h3>
+  <p>Dopo aver visto l'anteprima, concedi all'area il doppio dei quadranti: vengono usati per leggere con più dettaglio.</p>
+  <p class="why"><b>Perché:</b> è il rimedio rapido quando temi che numeri o scritte piccole sfuggano. L'anteprima si aggiorna subito, così vedi il costo prima di lanciare. Si azzera a ogni nuova area.</p>
+</div>
+
+<h2 id="risultati">Tabella dei risultati</h2>
+<p class="intro">Niente viene salvato finché non confermi: la tabella serve a controllare.</p>
+
+<div class="tablewrap">
+<table>
+  <tr><th>Comando</th><th>Cosa fa</th><th>Quando usarlo</th></tr>
+  <tr><td><b>Colonna "Toponimo"</b></td><td>Doppio clic per correggere il testo.</td><td>Un nome è letto quasi bene.</td></tr>
+  <tr><td><b>Spunta "Includi"</b></td><td>Le righe senza spunta non vengono salvate.</td><td>Letture sbagliate o che non ti interessano.</td></tr>
+  <tr><td><b>Trova e sostituisci</b></td><td>Corregge lo stesso errore su molte righe, anche solo su lettere o solo su numeri.</td><td>Un errore che si ripete (per esempio "0" al posto di "O").</td></tr>
+  <tr><td><b>Cerca duplicati</b></td><td>Trova i nomi letti due volte dal plugin sul bordo tra due quadranti e te li elenca; li rimuove solo se confermi. Scegli tu la distanza massima: 5, 10, 20 o 70 metri.</td><td>Prima di confermare, se i quadranti sono più di uno. Due luoghi con lo stesso nome letti nello stesso quadrante non vengono mai uniti: sono due scritte vere sulla carta.</td></tr>
+  <tr><td><b>Rilancia con Claude sul quadrante</b></td><td>Rilegge con Claude l'intero quadrante delle righe selezionate.</td><td>Pochi quadranti letti male: eviti di rifare tutto.</td></tr>
+  <tr><td><b>OK - Crea punti</b></td><td>Salva i punti e il contorno dell'area nel GeoPackage.</td><td>Quando la tabella ti convince.</td></tr>
+</table>
+</div>
+<p>Se chiudi la tabella per sbaglio, <b>Mostra risultati</b> la riapre.</p>
+
+<div class="card">
+  <h3>Esporta testo per RAG (pulsante nel pannello)</h3>
+  <p>Scegli dove salvare e ottieni un file di testo con tutti i toponimi del GeoPackage di output corrente (o dell'ultimo usato; ti viene chiesto quale solo se non ce n'è nessuno): una riga per nome, con coordinate in gradi, coordinate originali, carta di provenienza, motore di lettura, confidenza e data.</p>
+  <p class="why"><b>Perché:</b> ogni riga è completa da sola, quindi un sistema di ricerca su documenti (RAG) può spezzare il testo come vuole senza perdere il legame tra nome, posizione e fonte. Esporta quello che è salvato nel file, non la tabella ancora da confermare.</p>
+</div>
+
+<h2 id="scelta">Cosa scegliere, in breve</h2>
+<div class="tablewrap">
+<table>
+  <tr><th>La tua situazione</th><th>Impostazioni</th></tr>
+  <tr><td>Non conosco la carta</td><td>Rispondi <b>Sì</b> alla domanda dopo la selezione.</td></tr>
+  <tr><td>Carta IGM o storica, scritte curve o in corsivo</td><td>Motore <b>Solo cloud</b>, risoluzione <b>Automatica</b>.</td></tr>
+  <tr><td>Carta tecnica moderna, testo stampato e dritto</td><td>Motore <b>Tesseract</b> con fallback cloud acceso.</td></tr>
+  <tr><td>Non voglio spendere nulla</td><td><b>Tesseract</b>, fallback spento, <b>Calibrazione automatica</b>.</td></tr>
+  <tr><td>Ho già trovato i valori giusti per questa carta</td><td><b>Scala</b> o <b>Risoluzione manuale</b>, e rispondi <b>No</b> alla domanda.</td></tr>
+  <tr><td>Mancano numeri o nomi piccoli</td><td><b>Raddoppia quadranti</b> e rilancia.</td></tr>
+</table>
+</div>
+
+<h2 id="problemi">Se qualcosa non va</h2>
+<div class="tablewrap">
+<table>
+  <tr><th>Cosa vedi</th><th>Causa probabile</th><th>Cosa fare</th></tr>
+  <tr><td>Nomi che non c'entrano con l'area</td><td>È selezionato un altro layer, oppure l'immagine era troppo piccola per essere letta.</td><td>Controlla "Layer attivo" nel pannello e la risoluzione nell'anteprima.</td></tr>
+  <tr><td>"Seleziona un layer WMS"</td><td>Nel pannello Layer è selezionato un layer che non è una carta WMS.</td><td>Clicca sulla carta nel pannello Layer.</td></tr>
+  <tr><td>L'estrazione si ferma dopo 5 quadranti</td><td>Il motore dà sempre lo stesso errore: chiave mancante o errata, modello inesistente, Tesseract non installato.</td><td>Leggi il messaggio: riporta l'errore ricevuto.</td></tr>
+  <tr><td>"Produrrebbe N quadranti (limite 2000)"</td><td>Risoluzione troppo fine per un'area così grande.</td><td>Area più piccola o risoluzione meno dettagliata.</td></tr>
+  <tr><td>Quadranti segnati "vuoto"</td><td>L'immagine era completamente bianca (mare, zona non coperta).</td><td>Niente: sono stati saltati senza costi.</td></tr>
+  <tr><td>Stesso nome due volte</td><td>Il nome cadeva nella fascia di sovrapposizione.</td><td>"Cerca duplicati" nella tabella.</td></tr>
+</table>
+</div>
+<p>I dettagli tecnici di ogni estrazione sono in QGIS, menu <b>Visualizza → Pannelli → Messaggi di log</b>, scheda "Toponimi Extractor".</p>
+
+<footer>Guida distribuita con il plugin Toponimi Extractor. Si apre dal pulsante "Guida" del pannello.</footer>
+
+</main>
+</body>
+</html>
