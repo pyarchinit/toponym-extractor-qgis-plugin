@@ -2,18 +2,18 @@
 name=Toponimi Extractor
 qgisMinimumVersion=3.28
 qgisMaximumVersion=4.99
-description=Estrazione automatica di toponimi ed etichette testuali da WMS raster tramite OCR a cascata
+description=Automatic extraction of place names and text labels from raster WMS layers using a cascading OCR pipeline
 version=0.8.9
 author=Luca Mandolesi
 email=mandoluca@gmail.com
 
-about=Plugin per QGIS che permette di selezionare un'area su un layer WMS raster, scomporla in quadranti alla risoluzione ottimale del servizio, ed eseguire il riconoscimento automatico di toponimi e altre etichette testuali (nomi di fiumi, luoghi, ecc.) tramite una pipeline OCR a cascata (Tesseract locale, con fallback a modelli vision Claude/GPT per testo inclinato o di bassa qualita). I risultati (testo, coordinate, fonte, motore OCR, confidenza) vengono salvati in un layer puntuale GeoPackage.
+about=QGIS plugin that lets you select an area on a raster WMS layer, split it into tiles at the service's optimal resolution, and automatically recognize place names (toponyms) and other text labels (river names, localities, etc.) through a cascading OCR pipeline (local Tesseract, with fallback to Claude/GPT vision models for skewed or low-quality text). Results (text, coordinates, source, OCR engine, confidence) are saved to a GeoPackage point layer.
 
-tracker=
-repository=
-homepage=
+tracker=https://github.com/pyarchinit/toponym-extractor-qgis-plugin/issues
+repository=https://github.com/pyarchinit/toponym-extractor-qgis-plugin
+homepage=https://github.com/pyarchinit/toponym-extractor-qgis-plugin
 
-tags=wms,ocr,toponimi,raster,geopackage,text extraction
+tags=wms,ocr,toponyms,raster,geopackage,text extraction,archaeology,pyarchinit
 
 category=Vector
 icon=icons/icon.svg
