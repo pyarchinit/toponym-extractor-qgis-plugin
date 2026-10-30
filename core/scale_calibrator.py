@@ -121,7 +121,7 @@ def calibrate_scale(
         result = ScaleCalibrationResult(scale_denominator, meters_per_pixel, avg_confidence, len(words), accepted)
         results.append(result)
 
-        QgsMessageLog.logMessage(f"Calibrazione scala: {result}", LOG_TAG, Qgis.Info)
+        QgsMessageLog.logMessage(f"Calibrazione scala: {result}", LOG_TAG, Qgis.MessageLevel.Info)
         if progress_callback:
             progress_callback(str(result))
 

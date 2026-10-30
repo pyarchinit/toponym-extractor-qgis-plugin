@@ -9,6 +9,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 
 from ..core import grid as grid_mod
 from ..core import wms_capabilities
+from ..core.i18n import tr
 from ..core import georeference
 from ..core.usage_tracker import UsageTracker
 from ..qgis_integration import tile_renderer
@@ -53,8 +54,10 @@ def resolve_resolution(aoi_extent, settings, capabilities_resolution, max_tile_p
     if capabilities_resolution and settings.get("crs_is_metric"):
         return capabilities_resolution
     raise ValueError(
-        "Impossibile determinare una risoluzione automatica per questo layer: "
-        "imposta una scala o una risoluzione manuale nelle impostazioni."
+        tr(
+            "Impossibile determinare una risoluzione automatica per questo layer: "
+            "imposta una scala o una risoluzione manuale nelle impostazioni."
+        )
     )
 
 
@@ -87,7 +90,7 @@ def plan_grid(aoi_extent, settings):
             f"Risoluzione richiesta {meters_per_pixel:.4g} unità CRS/px troppo grossolana per l'area "
             f"(un solo quadrante semivuoto): uso {full_tile_resolution:.4g}, che riempie il quadrante.",
             LOG_TAG,
-            Qgis.Warning,
+            Qgis.MessageLevel.Warning,
         )
         meters_per_pixel = full_tile_resolution
 
@@ -104,9 +107,11 @@ def plan_grid(aoi_extent, settings):
     estimated_tiles = grid_mod.estimate_tile_count(aoi_extent, meters_per_pixel, max_tile_px, overlap_px)
     if estimated_tiles is not None and estimated_tiles > MAX_TILES_PER_EXTRACTION:
         raise ValueError(
-            f"Con risoluzione {meters_per_pixel:.4g} unità CRS/px l'area selezionata produrrebbe "
-            f"{estimated_tiles} quadranti (limite: {MAX_TILES_PER_EXTRACTION}). "
-            f"Seleziona un'area più piccola o imposta una risoluzione meno dettagliata."
+            tr(
+                "Con risoluzione {resolution:.4g} unità CRS/px l'area selezionata produrrebbe "
+                "{tiles} quadranti (limite: {limit}). "
+                "Seleziona un'area più piccola o imposta una risoluzione meno dettagliata."
+            ).format(resolution=meters_per_pixel, tiles=estimated_tiles, limit=MAX_TILES_PER_EXTRACTION)
         )
 
     tiles = grid_mod.build_grid(aoi_extent, meters_per_pixel, max_tile_px, overlap_px=overlap_px)
@@ -117,7 +122,7 @@ class ExtractionTask(QgsTask):
     stepChanged = pyqtSignal(str)
 
     def __init__(self, layer, aoi_extent, settings, on_finished=None):
-        super().__init__("Estrazione toponimi da raster WMS", QgsTask.Flag.CanCancel)
+        super().__init__(tr("Estrazione toponimi da raster WMS"), QgsTask.Flag.CanCancel)
         # Copia privata del layer, creata qui nel thread principale: il task
         # non deve dipendere da un layer che l'utente può rimuovere dal
         # progetto mentre l'estrazione è in corso.
@@ -144,7 +149,7 @@ class ExtractionTask(QgsTask):
             self._run_impl()
         except Exception as exc:
             self.exception = exc
-            QgsMessageLog.logMessage(str(exc), LOG_TAG, Qgis.Critical)
+            QgsMessageLog.logMessage(str(exc), LOG_TAG, Qgis.MessageLevel.Critical)
             self._cleanup_tile_cache_dir()
             return False
 
@@ -172,7 +177,7 @@ class ExtractionTask(QgsTask):
         fonte_indirizzo_wms = wms_params.get("base_url", "")
         data_estrazione = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
-        self.stepChanged.emit("Interrogazione del servizio WMS e suddivisione dell'area in quadranti...")
+        self.stepChanged.emit(tr("Interrogazione del servizio WMS e suddivisione dell'area in quadranti..."))
         tiles, meters_per_pixel, max_tile_px = plan_grid(self.aoi_extent, self.settings)
         self.tiles_total = len(tiles)
 
@@ -180,7 +185,7 @@ class ExtractionTask(QgsTask):
             f"Griglia: {self.tiles_total} quadranti, "
             f"risoluzione={meters_per_pixel} unità CRS/px, max_tile_px={max_tile_px}",
             LOG_TAG,
-            Qgis.Info,
+            Qgis.MessageLevel.Info,
         )
 
         # Riferimento diretto alla lista: se l'utente annulla, i toponimi già
@@ -193,21 +198,27 @@ class ExtractionTask(QgsTask):
                 break
 
             self.stepChanged.emit(
-                f"Quadrante {self.tiles_processed + 1}/{self.tiles_total}: rendering immagine..."
+                tr("Quadrante {n}/{total}: rendering immagine...").format(
+                    n=self.tiles_processed + 1, total=self.tiles_total
+                )
             )
             image_path, is_blank = tile_renderer.render_tile(self.layer, tile, self.tile_cache_dir)
 
             if is_blank:
                 self.usage_tracker.record_tile_engine(BLANK_TILE_ENGINE)
                 self.stepChanged.emit(
-                    f"Quadrante {self.tiles_processed + 1}/{self.tiles_total}: immagine vuota, OCR saltato."
+                    tr("Quadrante {n}/{total}: immagine vuota, OCR saltato.").format(
+                        n=self.tiles_processed + 1, total=self.tiles_total
+                    )
                 )
                 self.tiles_processed += 1
                 self.setProgress(100.0 * self.tiles_processed / self.tiles_total)
                 continue
 
             self.stepChanged.emit(
-                f"Quadrante {self.tiles_processed + 1}/{self.tiles_total}: riconoscimento testo (OCR)..."
+                tr("Quadrante {n}/{total}: riconoscimento testo (OCR)...").format(
+                    n=self.tiles_processed + 1, total=self.tiles_total
+                )
             )
             errors_before = self.usage_tracker.error_count()
             words, engine_used = cascade.run_cascade(
@@ -222,20 +233,23 @@ class ExtractionTask(QgsTask):
                 consecutive_failed_tiles = 0
             if consecutive_failed_tiles >= MAX_CONSECUTIVE_FAILED_TILES and not self.isCanceled():
                 raise RuntimeError(
-                    f"Estrazione interrotta: {consecutive_failed_tiles} quadranti consecutivi falliti "
-                    f"per errore del motore OCR.\n\n{self.usage_tracker.summary_text()}"
+                    tr(
+                        "Estrazione interrotta: {count} quadranti consecutivi falliti "
+                        "per errore del motore OCR.\n\n{summary}"
+                    ).format(count=consecutive_failed_tiles, summary=self.usage_tracker.summary_text())
                 )
 
             QgsMessageLog.logMessage(
                 f"Tile [{tile.row},{tile.col}] ({tile.width_px}x{tile.height_px}px): "
                 f"{len(words)} parole trovate (motore: {engine_used})",
                 LOG_TAG,
-                Qgis.Info,
+                Qgis.MessageLevel.Info,
             )
 
             self.stepChanged.emit(
-                f"Quadrante {self.tiles_processed + 1}/{self.tiles_total}: "
-                f"{len(words)} toponimi trovati (motore: {engine_used})."
+                tr("Quadrante {n}/{total}: {words} toponimi trovati (motore: {engine}).").format(
+                    n=self.tiles_processed + 1, total=self.tiles_total, words=len(words), engine=engine_used
+                )
             )
 
             for word in words:
@@ -271,13 +285,15 @@ class ExtractionTask(QgsTask):
         QgsMessageLog.logMessage(
             f"Totale parole trovate: {self.total_words_found} su {self.tiles_processed} quadranti processati.",
             LOG_TAG,
-            Qgis.Info,
+            Qgis.MessageLevel.Info,
         )
         usage_summary = self.usage_tracker.summary_text()
-        QgsMessageLog.logMessage(f"Utilizzo motori OCR:\n{usage_summary}", LOG_TAG, Qgis.Info)
+        QgsMessageLog.logMessage(f"Utilizzo motori OCR:\n{usage_summary}", LOG_TAG, Qgis.MessageLevel.Info)
 
         self.stepChanged.emit(
-            f"Completato: {self.total_words_found} toponimi trovati in {self.tiles_processed} quadranti."
+            tr("Completato: {words} toponimi trovati in {tiles} quadranti.").format(
+                words=self.total_words_found, tiles=self.tiles_processed
+            )
         )
         for line in self.usage_tracker.summary_lines():
             self.stepChanged.emit(f"  {line}")

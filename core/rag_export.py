@@ -12,12 +12,12 @@ Scelte di formato:
 """
 
 from qgis.core import (
+    Qgis,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsProject,
     QgsProviderRegistry,
     QgsVectorLayer,
-    QgsWkbTypes,
 )
 
 from .geopackage_writer import AOI_LAYER_NAME_SUFFIX
@@ -34,7 +34,7 @@ def _point_layers(gpkg_path):
         if name.endswith(AOI_LAYER_NAME_SUFFIX):
             continue
         layer = QgsVectorLayer(f"{gpkg_path}|layername={name}", name, "ogr")
-        if not layer.isValid() or layer.geometryType() != QgsWkbTypes.GeometryType.PointGeometry:
+        if not layer.isValid() or layer.geometryType() != Qgis.GeometryType.Point:
             continue
         if layer.fields().indexOf(NAME_FIELD) < 0:
             continue

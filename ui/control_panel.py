@@ -13,6 +13,7 @@ from qgis.PyQt.QtWidgets import (
     QSizePolicy,
 )
 
+from ..core.i18n import tr
 from ..core.plugin_version import get_plugin_version
 
 
@@ -24,7 +25,7 @@ class ControlPanelDock(QDockWidget):
         body = QWidget()
         layout = QVBoxLayout(body)
 
-        status_box = QGroupBox("Stato")
+        status_box = QGroupBox(tr("Stato"))
         status_layout = QVBoxLayout(status_box)
         self.layer_label = QLabel()
         self.area_label = QLabel()
@@ -35,7 +36,7 @@ class ControlPanelDock(QDockWidget):
             status_layout.addWidget(label)
         layout.addWidget(status_box)
 
-        self.buttons_box = QGroupBox("Azioni")
+        self.buttons_box = QGroupBox(tr("Azioni"))
         self.buttons_layout = QVBoxLayout(self.buttons_box)
         layout.addWidget(self.buttons_box)
 
@@ -54,8 +55,8 @@ class ControlPanelDock(QDockWidget):
         return button
 
     def set_status(self, layer_text, area_text, output_text, task_text=""):
-        self.layer_label.setText(f"Layer attivo: {layer_text}")
-        self.area_label.setText(f"Area: {area_text}")
-        self.output_label.setText(f"Output: {output_text}")
+        self.layer_label.setText(tr("Layer attivo: {value}").format(value=layer_text))
+        self.area_label.setText(tr("Area: {value}").format(value=area_text))
+        self.output_label.setText(tr("Output: {value}").format(value=output_text))
         self.task_label.setText(task_text)
         self.task_label.setVisible(bool(task_text))

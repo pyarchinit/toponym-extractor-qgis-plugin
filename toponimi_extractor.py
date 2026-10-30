@@ -23,19 +23,25 @@ _ensure_user_site_packages_on_path()
 
 from qgis.PyQt.QtCore import Qt, QUrl
 from qgis.PyQt.QtCore import QSettings
-from qgis.PyQt.QtWidgets import QAction, QFileDialog, QMessageBox, QStyle
+from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox, QStyle
 from qgis.PyQt.QtGui import QDesktopServices, QIcon
+
+try:
+    from qgis.PyQt.QtGui import QAction  # Qt6 (QGIS 4)
+except ImportError:
+    from qgis.PyQt.QtWidgets import QAction  # Qt5 (QGIS 3)
 from qgis.core import (
+    Qgis,
     QgsApplication,
     QgsCoordinateTransform,
     QgsCsException,
     QgsProject,
-    QgsUnitTypes,
 )
 
 from .qgis_integration.map_tool import RectangleMapTool
 from .qgis_integration import wms_layer_utils
 from .core import grid as grid_mod
+from .core.i18n import install_translator, remove_translator, tr
 from .core.plugin_version import get_plugin_version
 from .ui.settings_dialog import load_ocr_settings
 
@@ -44,6 +50,7 @@ class ToponimiExtractorPlugin:
     """Plugin principale: registra le azioni in QGIS e coordina i componenti."""
 
     def __init__(self, iface):
+        install_translator()
         self.iface = iface
         self.plugin_dir = os.path.dirname(__file__)
         self.actions = []
@@ -102,70 +109,74 @@ class ToponimiExtractorPlugin:
 
         self.action_select_aoi = self._make_action(
             self._theme_icon("/mActionSelectRectangle.svg", plugin_icon),
-            "Seleziona area",
-            "Disegna un rettangolo sulla mappa ed estrai i toponimi al suo interno",
+            tr("Seleziona area"),
+            tr("Disegna un rettangolo sulla mappa ed estrai i toponimi al suo interno"),
             self.activate_aoi_tool,
         )
         self.action_run_batch = self._make_action(
             style.standardIcon(std.SP_MediaPlay),
-            "Estrai toponimi",
-            "Avvia l'estrazione dei toponimi sull'area selezionata",
+            tr("Estrai toponimi"),
+            tr("Avvia l'estrazione dei toponimi sull'area selezionata"),
             self._start_extraction,
             enabled=False,
         )
         self.action_cancel = self._make_action(
             style.standardIcon(std.SP_DialogCancelButton),
-            "Annulla estrazione",
-            "Interrompe l'estrazione in corso",
+            tr("Annulla estrazione"),
+            tr("Interrompe l'estrazione in corso"),
             self._cancel_extraction,
             enabled=False,
         )
         self.action_show_results = self._make_action(
             style.standardIcon(std.SP_FileDialogDetailedView),
-            "Mostra risultati",
-            "Porta in primo piano la tabella dei toponimi trovati",
+            tr("Mostra risultati"),
+            tr("Porta in primo piano la tabella dei toponimi trovati"),
             self.show_results_dock,
             enabled=False,
         )
         self.action_more_tiles = self._make_action(
             style.standardIcon(std.SP_ArrowUp),
-            "Raddoppia quadranti (più dettaglio)",
-            "Nel dubbio: concede il doppio dei quadranti all'area selezionata, usati per leggere "
-            "a risoluzione più alta numeri e scritte piccole. L'anteprima si aggiorna.",
+            tr("Raddoppia quadranti (più dettaglio)"),
+            tr(
+                "Nel dubbio: concede il doppio dei quadranti all'area selezionata, usati per leggere "
+                "a risoluzione più alta numeri e scritte piccole. L'anteprima si aggiorna."
+            ),
             lambda: self._change_tile_budget(2),
             enabled=False,
         )
         self.action_fewer_tiles = self._make_action(
             style.standardIcon(std.SP_ArrowDown),
-            "Dimezza quadranti (meno dettaglio)",
-            "Annulla un raddoppio dei quadranti.",
+            tr("Dimezza quadranti (meno dettaglio)"),
+            tr("Annulla un raddoppio dei quadranti."),
             lambda: self._change_tile_budget(0.5),
             enabled=False,
         )
         self.action_export_text = self._make_action(
             style.standardIcon(std.SP_DialogSaveButton),
-            "Esporta testo per RAG",
-            "Esporta i toponimi salvati nel GeoPackage di output come file di testo leggero, "
-            "una riga per toponimo, pronto da indicizzare in una RAG",
+            tr("Esporta testo per RAG"),
+            tr(
+                "Esporta i toponimi salvati nel GeoPackage di output come file di testo leggero, "
+                "una riga per toponimo, pronto da indicizzare in una RAG"
+            ),
             self.export_text_for_rag,
         )
         self.action_settings = self._make_action(
             style.standardIcon(std.SP_FileDialogContentsView),
-            "Impostazioni",
-            "Motore OCR, chiavi API, risoluzione e quadranti",
+            tr("Impostazioni"),
+            tr("Motore OCR, chiavi API, risoluzione e quadranti"),
             self.open_settings_dialog,
         )
         self.action_about = self._make_action(
             style.standardIcon(std.SP_MessageBoxInformation),
-            "Info versione",
-            "Mostra la versione del plugin",
+            tr("Info versione"),
+            tr("Mostra la versione del plugin"),
             self.show_version_info,
         )
 
         self.action_help = self._make_action(
             style.standardIcon(std.SP_DialogHelpButton),
-            "Guida",
-            "Apre la guida: come si usa il plugin e cosa fa ogni impostazione",
+            tr("Guida"),
+            tr("Apre la guida: come si usa il plugin e cosa fa ogni impostazione"),
             self.open_help,
         )
 
@@ -173,7 +184,7 @@ class ToponimiExtractorPlugin:
         self.iface.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.control_panel)
         self.action_panel = self.control_panel.toggleViewAction()
         self.action_panel.setIcon(plugin_icon)
-        self.action_panel.setText("Pannello Toponimi")
+        self.action_panel.setText(tr("Pannello Toponimi"))
         self.actions.append(self.action_panel)
         self.iface.addPluginToMenu(self.menu, self.action_panel)
 
@@ -236,26 +247,30 @@ class ToponimiExtractorPlugin:
 
         layer = self.iface.activeLayer()
         if layer is None:
-            layer_text = "nessuno"
+            layer_text = tr("nessuno")
         elif wms_layer_utils.is_wms_layer(layer):
             layer_text = layer.name()
         else:
-            layer_text = f"{layer.name()} (non è un layer WMS)"
+            layer_text = tr("{name} (non è un layer WMS)").format(name=layer.name())
 
         if self.last_aoi_extent is None:
-            area_text = "nessuna selezionata"
+            area_text = tr("nessuna selezionata")
         else:
-            area_text = f"{self.last_aoi_extent.width():.0f} × {self.last_aoi_extent.height():.0f} unità CRS"
+            area_text = tr("{width:.0f} × {height:.0f} unità CRS").format(
+                width=self.last_aoi_extent.width(), height=self.last_aoi_extent.height()
+            )
 
         if self.output_gpkg_path:
-            output_text = f"{self.output_layer_name} in {os.path.basename(self.output_gpkg_path)}"
+            output_text = tr("{layer} in {file}").format(
+                layer=self.output_layer_name, file=os.path.basename(self.output_gpkg_path)
+            )
         else:
-            output_text = "da scegliere alla selezione dell'area"
+            output_text = tr("da scegliere alla selezione dell'area")
 
         if self.task is not None:
-            task_text = "Estrazione in corso..."
+            task_text = tr("Estrazione in corso...")
         elif self.calibration_task is not None:
-            task_text = "Ricerca della modalità migliore in corso..."
+            task_text = tr("Ricerca della modalità migliore in corso...")
         else:
             task_text = ""
         self.control_panel.set_status(layer_text, area_text, output_text, task_text)
@@ -298,10 +313,12 @@ class ToponimiExtractorPlugin:
         choice = QMessageBox.question(
             self.iface.mainWindow(),
             "Toponimi Extractor",
-            f"Alcune librerie Python opzionali non sono installate nell'ambiente di QGIS:\n\n"
-            f"{', '.join(missing)}\n\n"
-            f"Sono necessarie per l'OCR locale (Tesseract) e/o i motori cloud (Claude/GPT).\n"
-            f"Vuoi installarle ora? (richiede connessione internet)",
+            tr(
+                "Alcune librerie Python opzionali non sono installate nell'ambiente di QGIS:\n\n"
+                "{packages}\n\n"
+                "Sono necessarie per l'OCR locale (Tesseract) e/o i motori cloud (Claude/GPT).\n"
+                "Vuoi installarle ora? (richiede connessione internet)"
+            ).format(packages=", ".join(missing)),
             buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             defaultButton=QMessageBox.StandardButton.No,
         )
@@ -313,17 +330,21 @@ class ToponimiExtractorPlugin:
             QMessageBox.information(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                f"Librerie installate correttamente:\n\n{output}\n\n"
-                f"Riavvia QGIS perché le modifiche abbiano effetto.",
+                tr(
+                    "Librerie installate correttamente:\n\n{output}\n\n"
+                    "Riavvia QGIS perché le modifiche abbiano effetto."
+                ).format(output=output),
             )
         else:
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                f"Installazione completata con alcuni errori:\n\n{output}\n\n"
-                f"Se un pacchetto è indicato come 'FALLITO' perché già in uso da QGIS, "
-                f"prova a chiudere e riaprire QGIS e ripetere: spesso il pacchetto risulta "
-                f"comunque già disponibile.",
+                tr(
+                    "Installazione completata con alcuni errori:\n\n{output}\n\n"
+                    "Se un pacchetto è indicato come 'FALLITO' perché già in uso da QGIS, "
+                    "prova a chiudere e riaprire QGIS e ripetere: spesso il pacchetto risulta "
+                    "comunque già disponibile."
+                ).format(output=output),
             )
 
     def unload(self):
@@ -362,6 +383,7 @@ class ToponimiExtractorPlugin:
             self.progress_dialog = None
 
         self._close_results_dock()
+        remove_translator()
 
     def _close_results_dock(self):
         """Chiude il dock dei risultati (se aperto) e libera la cache delle
@@ -393,7 +415,7 @@ class ToponimiExtractorPlugin:
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                "Seleziona prima, nel pannello Layer, un layer raster WMS attivo.",
+                tr("Seleziona prima, nel pannello Layer, un layer raster WMS attivo."),
             )
             return
 
@@ -421,12 +443,12 @@ class ToponimiExtractorPlugin:
 
         self.iface.messageBar().pushInfo(
             f"Toponimi Extractor v{get_plugin_version()}",
-            "Disegna un rettangolo sulla mappa per selezionare l'area di interesse (Esc per annullare).",
+            tr("Disegna un rettangolo sulla mappa per selezionare l'area di interesse (Esc per annullare)."),
         )
 
     def _on_selection_canceled(self):
         self._deactivate_aoi_tool()
-        self.iface.messageBar().pushInfo("Toponimi Extractor", "Selezione dell'area annullata.")
+        self.iface.messageBar().pushInfo("Toponimi Extractor", tr("Selezione dell'area annullata."))
 
     def _on_rectangle_created(self, rect):
         self._deactivate_aoi_tool()
@@ -436,7 +458,7 @@ class ToponimiExtractorPlugin:
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                "Il layer attivo non è più un layer raster WMS: selezionalo e ridisegna l'area.",
+                tr("Il layer attivo non è più un layer raster WMS: selezionalo e ridisegna l'area."),
             )
             return
 
@@ -453,8 +475,9 @@ class ToponimiExtractorPlugin:
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     "Toponimi Extractor",
-                    f"Impossibile convertire l'area nel sistema di riferimento del layer "
-                    f"({layer.crs().authid()}): {exc}",
+                    tr("Impossibile convertire l'area nel sistema di riferimento del layer ({crs}): {error}").format(
+                        crs=layer.crs().authid(), error=exc
+                    ),
                 )
                 return
 
@@ -469,10 +492,12 @@ class ToponimiExtractorPlugin:
         choice = QMessageBox.question(
             self.iface.mainWindow(),
             "Toponimi Extractor",
-            "Area selezionata.\n\nVuoi che trovi la modalità migliore per quest'area "
-            "(risoluzione, quadranti e motore OCR)?\n\n"
-            "Sì: alcune letture di prova con il modello AI, poi i parametri trovati vengono "
-            "usati per l'estrazione.\nNo: l'estrazione userà le impostazioni correnti.",
+            tr(
+                "Area selezionata.\n\nVuoi che trovi la modalità migliore per quest'area "
+                "(risoluzione, quadranti e motore OCR)?\n\n"
+                "Sì: alcune letture di prova con il modello AI, poi i parametri trovati vengono "
+                "usati per l'estrazione.\nNo: l'estrazione userà le impostazioni correnti."
+            ),
             buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             defaultButton=QMessageBox.StandardButton.Yes,
         )
@@ -488,8 +513,10 @@ class ToponimiExtractorPlugin:
         summary = self._show_grid_preview(layer)
         self.iface.messageBar().pushSuccess(
             "Toponimi Extractor",
-            f"{summary} Controlla l'anteprima sulla mappa, poi premi 'Estrai toponimi'. "
-            f"Nel dubbio su numeri o scritte piccole, 'Raddoppia quadranti' aumenta il dettaglio.",
+            tr(
+                "{summary} Controlla l'anteprima sulla mappa, poi premi 'Estrai toponimi'. "
+                "Nel dubbio su numeri o scritte piccole, 'Raddoppia quadranti' aumenta il dettaglio."
+            ).format(summary=summary),
         )
         self._refresh_panel()
 
@@ -508,7 +535,7 @@ class ToponimiExtractorPlugin:
         from .ui.progress_dialog import ProgressDialog
 
         self.progress_dialog = ProgressDialog(
-            self.iface.mainWindow(), title="Ricerca della modalità migliore", indeterminate=True
+            self.iface.mainWindow(), title=tr("Ricerca della modalità migliore"), indeterminate=True
         )
         self.progress_dialog.cancel_btn.clicked.connect(self._cancel_extraction)
 
@@ -534,20 +561,22 @@ class ToponimiExtractorPlugin:
             if isinstance(task.exception, ai_agent_calibrator.AiCalibrationError):
                 provider = task.settings.get("ai_agent_provider", "claude")
                 message = (
-                    f"Ricerca della modalità migliore non avviabile: {task.exception}\n\n"
-                    f"Verifica di aver configurato una API key valida per il provider scelto "
-                    f"({provider}) nella sezione 'Fallback cloud' delle impostazioni."
+                    tr(
+                        "Ricerca della modalità migliore non avviabile: {error}\n\n"
+                        "Verifica di aver configurato una API key valida per il provider scelto "
+                        "({provider}) nella sezione 'Fallback cloud' delle impostazioni."
+                    ).format(error=task.exception, provider=provider)
                 )
             else:
-                message = f"Ricerca della modalità migliore fallita: {task.exception}"
+                message = tr("Ricerca della modalità migliore fallita: {error}").format(error=task.exception)
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                message + "\n\nL'estrazione userà le impostazioni correnti.",
+                message + "\n\n" + tr("L'estrazione userà le impostazioni correnti."),
             )
         elif task.result is None:
             self.iface.messageBar().pushInfo(
-                "Toponimi Extractor", "Ricerca annullata: l'estrazione userà le impostazioni correnti."
+                "Toponimi Extractor", tr("Ricerca annullata: l'estrazione userà le impostazioni correnti.")
             )
         else:
             self._show_calibration_report(task.result)
@@ -588,7 +617,7 @@ class ToponimiExtractorPlugin:
         settings = load_ocr_settings()
         settings["wms_params"] = wms_params
         settings["canvas_units_per_pixel"] = self.last_canvas_units_per_pixel
-        settings["crs_is_metric"] = layer.crs().mapUnits() == QgsUnitTypes.DistanceMeters
+        settings["crs_is_metric"] = layer.crs().mapUnits() == Qgis.DistanceUnit.Meters
         settings["tile_budget_multiplier"] = self.tile_budget_multiplier
 
         if self.calibration_overrides is not None:
@@ -617,24 +646,26 @@ class ToponimiExtractorPlugin:
 
         settings = self._build_extraction_settings(layer)
         if settings is None:
-            return "Area pronta."
+            return tr("Area pronta.")
 
         tiles = []
         if self.calibration_overrides is None and settings.get("resolution_mode") == "calibrate":
-            summary = "Area pronta: i quadranti saranno definiti dalla calibrazione della scala, all'avvio."
+            summary = tr("Area pronta: i quadranti saranno definiti dalla calibrazione della scala, all'avvio.")
         else:
             try:
                 tiles, meters_per_pixel, max_tile_px = plan_grid(self.last_aoi_extent, settings)
-                summary = (
-                    f"Area pronta: {len(tiles)} quadranti, risoluzione {meters_per_pixel:.4g} unità CRS/px, "
-                    f"lato massimo {max_tile_px} px."
-                )
+                summary = tr(
+                    "Area pronta: {tiles} quadranti, risoluzione {resolution:.4g} unità CRS/px, "
+                    "lato massimo {max_px} px."
+                ).format(tiles=len(tiles), resolution=meters_per_pixel, max_px=max_tile_px)
                 if self.tile_budget_multiplier > 1:
-                    summary += f" Quadranti ×{self.tile_budget_multiplier} rispetto alla griglia di base."
+                    summary += " " + tr("Quadranti ×{factor} rispetto alla griglia di base.").format(
+                        factor=self.tile_budget_multiplier
+                    )
                 self._preview_ok = True
             except ValueError as exc:
                 QMessageBox.warning(self.iface.mainWindow(), "Toponimi Extractor", str(exc))
-                summary = "Area selezionata, ma con le impostazioni correnti l'estrazione non può partire."
+                summary = tr("Area selezionata, ma con le impostazioni correnti l'estrazione non può partire.")
 
         preview = grid_preview.build_preview_layer(self.last_aoi_extent, tiles, layer.crs())
         QgsProject.instance().addMapLayer(preview)
@@ -649,7 +680,7 @@ class ToponimiExtractorPlugin:
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                "Seleziona prima un'area con lo strumento 'Seleziona area'.",
+                tr("Seleziona prima un'area con lo strumento 'Seleziona area'."),
             )
             return
 
@@ -660,8 +691,10 @@ class ToponimiExtractorPlugin:
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                "Il layer WMS su cui era stata disegnata l'area non è più nel progetto: "
-                "seleziona di nuovo l'area con 'Seleziona area'.",
+                tr(
+                    "Il layer WMS su cui era stata disegnata l'area non è più nel progetto: "
+                    "seleziona di nuovo l'area con 'Seleziona area'."
+                ),
             )
             return
 
@@ -678,7 +711,7 @@ class ToponimiExtractorPlugin:
         from .tasks.extraction_task import ExtractionTask
         from .ui.progress_dialog import ProgressDialog
 
-        self.progress_dialog = ProgressDialog(self.iface.mainWindow(), title="Estrazione in corso")
+        self.progress_dialog = ProgressDialog(self.iface.mainWindow(), title=tr("Estrazione in corso"))
         self.progress_dialog.cancel_btn.clicked.connect(self._cancel_extraction)
 
         self.task = ExtractionTask(layer, self.last_aoi_extent, settings, on_finished=self._on_task_finished)
@@ -714,7 +747,7 @@ class ToponimiExtractorPlugin:
                 QMessageBox.critical(
                     self.iface.mainWindow(),
                     "Toponimi Extractor",
-                    f"Calibrazione scala fallita: {exc}",
+                    tr("Calibrazione scala fallita: {error}").format(error=exc),
                 )
                 return None
         finally:
@@ -728,14 +761,16 @@ class ToponimiExtractorPlugin:
                 QMessageBox.warning(
                     self.iface.mainWindow(),
                     "Toponimi Extractor",
-                    "Calibrazione fallita: nessuna scala testata.",
+                    tr("Calibrazione fallita: nessuna scala testata."),
                 )
                 return None
             choice = QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                f"Nessuna scala testata soddisfa i criteri richiesti:\n\n{report}\n\n"
-                f"Vuoi usare comunque la migliore trovata ({best}) o annullare?",
+                tr(
+                    "Nessuna scala testata soddisfa i criteri richiesti:\n\n{report}\n\n"
+                    "Vuoi usare comunque la migliore trovata ({best}) o annullare?"
+                ).format(report=report, best=best),
                 buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
                 defaultButton=QMessageBox.StandardButton.Cancel,
             )
@@ -746,8 +781,10 @@ class ToponimiExtractorPlugin:
         QMessageBox.information(
             self.iface.mainWindow(),
             "Toponimi Extractor",
-            f"Calibrazione completata. Scala scelta: 1:{accepted.scale_denominator} "
-            f"({accepted.meters_per_pixel:.4f} m/px)\n\nDettaglio test:\n{report}",
+            tr(
+                "Calibrazione completata. Scala scelta: 1:{scale} "
+                "({resolution:.4f} m/px)\n\nDettaglio test:\n{report}"
+            ).format(scale=accepted.scale_denominator, resolution=accepted.meters_per_pixel, report=report),
         )
         return accepted.meters_per_pixel
 
@@ -758,20 +795,28 @@ class ToponimiExtractorPlugin:
         estimated_tiles = grid_mod.estimate_tile_count(
             self.last_aoi_extent, result.meters_per_pixel, result.tile_size_px, result.overlap_px
         )
-        summary = (
-            f"L'agente AI ha scelto la configurazione per l'estrazione:\n"
-            f"• Risoluzione: {result.meters_per_pixel:.4f} unità CRS/px\n"
-            f"• Dimensione tile: {result.tile_size_px} px — Overlap: {result.overlap_px} px\n"
-            f"• Motore OCR: {result.engine}\n"
-            f"• Quadranti stimati sull'area: {estimated_tiles}\n"
-            f"• Tentativi effettuati: {len(result.attempts)}/{ai_agent_calibrator.MAX_ITERATIONS}"
+        summary = tr(
+            "L'agente AI ha scelto la configurazione per l'estrazione:\n"
+            "• Risoluzione: {resolution:.4f} unità CRS/px\n"
+            "• Dimensione tile: {tile} px — Overlap: {overlap} px\n"
+            "• Motore OCR: {engine}\n"
+            "• Quadranti stimati sull'area: {tiles}\n"
+            "• Tentativi effettuati: {attempts}/{max_attempts}"
+        ).format(
+            resolution=result.meters_per_pixel,
+            tile=result.tile_size_px,
+            overlap=result.overlap_px,
+            engine=result.engine,
+            tiles=estimated_tiles,
+            attempts=len(result.attempts),
+            max_attempts=ai_agent_calibrator.MAX_ITERATIONS,
         )
         details = (
-            "RAGIONAMENTO DELL'AGENTE\n\n" + "\n\n".join(result.reasoning_log)
-            + "\n\n\nDETTAGLIO TENTATIVI\n\n" + result.report_text()
+            tr("RAGIONAMENTO DELL'AGENTE") + "\n\n" + "\n\n".join(result.reasoning_log)
+            + "\n\n\n" + tr("DETTAGLIO TENTATIVI") + "\n\n" + result.report_text()
         )
         ReportDialog(
-            "Toponimi Extractor — modalità migliore trovata",
+            tr("Toponimi Extractor — modalità migliore trovata"),
             summary,
             details,
             parent=self.iface.mainWindow(),
@@ -789,7 +834,7 @@ class ToponimiExtractorPlugin:
             except RuntimeError:
                 pass
         if self.progress_dialog is not None and (self.task is not None or self.calibration_task is not None):
-            self.progress_dialog.add_step("Annullamento richiesto: attendo la fine del passo in corso...")
+            self.progress_dialog.add_step(tr("Annullamento richiesto: attendo la fine del passo in corso..."))
 
     def _on_task_finished(self, success, task):
         self.task = None
@@ -808,13 +853,15 @@ class ToponimiExtractorPlugin:
         if not success:
             # Annullata dall'utente: non è un errore.
             if not task.all_results:
-                self.iface.messageBar().pushInfo("Toponimi Extractor", "Estrazione annullata.")
+                self.iface.messageBar().pushInfo("Toponimi Extractor", tr("Estrazione annullata."))
                 return
             choice = QMessageBox.question(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                f"Estrazione annullata dopo {task.tiles_processed} quadranti su {task.tiles_total}.\n\n"
-                f"Vuoi rivedere i {len(task.all_results)} toponimi trovati finora?",
+                tr(
+                    "Estrazione annullata dopo {done} quadranti su {total}.\n\n"
+                    "Vuoi rivedere i {count} toponimi trovati finora?"
+                ).format(done=task.tiles_processed, total=task.tiles_total, count=len(task.all_results)),
                 buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                 defaultButton=QMessageBox.StandardButton.Yes,
             )
@@ -826,7 +873,7 @@ class ToponimiExtractorPlugin:
             QMessageBox.information(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                "Nessun toponimo trovato nell'area selezionata.",
+                tr("Nessun toponimo trovato nell'area selezionata."),
             )
             shutil.rmtree(task.tile_cache_dir, ignore_errors=True)
             return
@@ -852,7 +899,7 @@ class ToponimiExtractorPlugin:
             QMessageBox.information(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                "Nessun toponimo selezionato: nessun punto creato.",
+                tr("Nessun toponimo selezionato: nessun punto creato."),
             )
             return
 
@@ -863,6 +910,8 @@ class ToponimiExtractorPlugin:
         from qgis.core import QgsVectorLayer
 
         overwrite = False
+        label_overwrite = tr("Sovrascrivi e perdi i dati attuali")
+        label_append = tr("Aggiungi a quelli presenti")
         if geopackage_writer.layer_exists(output_path, layer_name):
             uri = f"{output_path}|layername={layer_name}"
             existing_layer = QgsVectorLayer(uri, layer_name, "ogr")
@@ -870,10 +919,12 @@ class ToponimiExtractorPlugin:
 
             if not compatible:
                 choice = self._ask_choice(
-                    f"Il layer \"{layer_name}\" esiste già in:\n{output_path}\n\n"
-                    f"ma non ha i campi di un layer di toponimi di questo plugin, quindi non ci si "
-                    f"possono aggiungere punti.\n\nSovrascrivendolo, TUTTI i suoi dati attuali vanno persi.",
-                    ["Sovrascrivi e perdi i dati attuali"],
+                    tr(
+                        "Il layer \"{name}\" esiste già in:\n{path}\n\n"
+                        "ma non ha i campi di un layer di toponimi di questo plugin, quindi non ci si "
+                        "possono aggiungere punti.\n\nSovrascrivendolo, TUTTI i suoi dati attuali vanno persi."
+                    ).format(name=layer_name, path=output_path),
+                    [label_overwrite],
                 )
                 if choice is None:
                     return
@@ -881,13 +932,15 @@ class ToponimiExtractorPlugin:
             elif not append_chosen:
                 # Alla scelta della destinazione il layer non c'era: è comparso dopo.
                 choice = self._ask_choice(
-                    f"Il layer \"{layer_name}\" ora esiste già in:\n{output_path}\n"
-                    f"con {existing_layer.featureCount()} toponimi.\n\nCosa vuoi fare dei nuovi toponimi?",
-                    ["Aggiungi a quelli presenti", "Sovrascrivi e perdi i dati attuali"],
+                    tr(
+                        "Il layer \"{name}\" ora esiste già in:\n{path}\n"
+                        "con {count} toponimi.\n\nCosa vuoi fare dei nuovi toponimi?"
+                    ).format(name=layer_name, path=output_path, count=existing_layer.featureCount()),
+                    [label_append, label_overwrite],
                 )
                 if choice is None:
                     return
-                overwrite = choice != "Aggiungi a quelli presenti"
+                overwrite = choice != label_append
             # altrimenti: l'utente ha scelto esplicitamente di aggiungere a questo layer
 
         layer = self._pending_layer
@@ -920,8 +973,10 @@ class ToponimiExtractorPlugin:
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                f"Salvataggio non riuscito:\n{exc}\n\n"
-                f"Verifica che il GeoPackage non sia aperto in modifica o bloccato da un altro programma.",
+                tr(
+                    "Salvataggio non riuscito:\n{error}\n\n"
+                    "Verifica che il GeoPackage non sia aperto in modifica o bloccato da un altro programma."
+                ).format(error=exc),
             )
             return
         geopackage_writer.apply_aoi_style(aoi_layer)
@@ -936,9 +991,17 @@ class ToponimiExtractorPlugin:
         QMessageBox.information(
             self.iface.mainWindow(),
             "Toponimi Extractor",
-            f"{count} punti salvati in:\n{output_path} (layer '{layer_name}', "
-            f"ora con {vector_layer.featureCount()} toponimi in totale)\n\n"
-            f"Area di estrazione salvata nel layer '{aoi_name}'.",
+            tr(
+                "{count} punti salvati in:\n{path} (layer '{layer}', "
+                "ora con {total} toponimi in totale)\n\n"
+                "Area di estrazione salvata nel layer '{aoi_layer}'."
+            ).format(
+                count=count,
+                path=output_path,
+                layer=layer_name,
+                total=vector_layer.featureCount(),
+                aoi_layer=aoi_name,
+            ),
         )
 
     def _ask_choice(self, text, labels):
@@ -985,7 +1048,7 @@ class ToponimiExtractorPlugin:
         if not gpkg_path:
             gpkg_path, _ = QFileDialog.getOpenFileName(
                 self.iface.mainWindow(),
-                "Nessun GeoPackage di toponimi noto: scegli quello da esportare",
+                tr("Nessun GeoPackage di toponimi noto: scegli quello da esportare"),
                 last_dir,
                 "GeoPackage (*.gpkg)",
             )
@@ -994,24 +1057,26 @@ class ToponimiExtractorPlugin:
 
         output_path, _ = QFileDialog.getSaveFileName(
             self.iface.mainWindow(),
-            "Salva il testo per la RAG",
+            tr("Salva il testo per la RAG"),
             os.path.splitext(gpkg_path)[0] + "_toponimi.md",
-            "Markdown (*.md);;Testo (*.txt)",
+            tr("Markdown (*.md);;Testo (*.txt)"),
         )
         if not output_path:
             return
 
-        title = f"Toponimi estratti — {os.path.splitext(os.path.basename(gpkg_path))[0]}"
+        title = tr("Toponimi estratti — {name}").format(name=os.path.splitext(os.path.basename(gpkg_path))[0])
         try:
             layer_count, total = rag_export.export_geopackage_to_text(gpkg_path, output_path, title)
         except (ValueError, OSError) as exc:
-            QMessageBox.warning(self.iface.mainWindow(), "Toponimi Extractor", f"Esportazione non riuscita:\n{exc}")
+            QMessageBox.warning(self.iface.mainWindow(), "Toponimi Extractor", tr("Esportazione non riuscita:\n{error}").format(error=exc))
             return
 
         QMessageBox.information(
             self.iface.mainWindow(),
             "Toponimi Extractor",
-            f"Esportati {total} toponimi da {layer_count} layer in:\n{output_path}",
+            tr("Esportati {total} toponimi da {layers} layer in:\n{path}").format(
+                total=total, layers=layer_count, path=output_path
+            ),
         )
 
     def open_help(self):
@@ -1021,12 +1086,12 @@ class ToponimiExtractorPlugin:
             QMessageBox.warning(
                 self.iface.mainWindow(),
                 "Toponimi Extractor",
-                f"Impossibile aprire la guida:\n{help_path}",
+                tr("Impossibile aprire la guida:\n{path}").format(path=help_path),
             )
 
     def show_version_info(self):
         QMessageBox.information(
             self.iface.mainWindow(),
             "Toponimi Extractor",
-            f"Toponimi Extractor\nVersione: {get_plugin_version()}",
+            tr("Toponimi Extractor\nVersione: {version}").format(version=get_plugin_version()),
         )

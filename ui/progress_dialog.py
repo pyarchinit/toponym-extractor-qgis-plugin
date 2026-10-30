@@ -14,6 +14,7 @@ from qgis.PyQt.QtWidgets import (
     QPushButton,
 )
 
+from ..core.i18n import tr
 from ..core.plugin_version import get_plugin_version
 
 
@@ -23,10 +24,12 @@ def _format_duration(seconds):
 
 
 class ProgressDialog(QDialog):
-    def __init__(self, parent=None, title="Estrazione in corso", indeterminate=False):
+    def __init__(self, parent=None, title=None, indeterminate=False):
         """`indeterminate`: barra "a scorrimento" per le operazioni di cui non
         si conosce in anticipo la durata."""
         super().__init__(parent)
+        if title is None:
+            title = tr("Estrazione in corso")
         self.setWindowTitle(f"Toponimi Extractor v{get_plugin_version()} - {title}")
         self.setMinimumSize(520, 360)
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowContextHelpButtonHint)
@@ -36,7 +39,7 @@ class ProgressDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        self.current_step_label = QLabel("Avvio...")
+        self.current_step_label = QLabel(tr("Avvio..."))
         self.current_step_label.setWordWrap(True)
         self.current_step_label.setStyleSheet("font-weight: bold;")
         layout.addWidget(self.current_step_label)
@@ -52,7 +55,7 @@ class ProgressDialog(QDialog):
         self.log_list.setWordWrap(True)
         layout.addWidget(self.log_list)
 
-        self.cancel_btn = QPushButton("Annulla")
+        self.cancel_btn = QPushButton(tr("Annulla"))
         layout.addWidget(self.cancel_btn)
 
         # Il tempo che scorre mostra che il lavoro è vivo anche quando un
@@ -65,8 +68,10 @@ class ProgressDialog(QDialog):
     def _update_elapsed(self):
         now = time.monotonic()
         self.elapsed_label.setText(
-            f"Tempo trascorso: {_format_duration(now - self._started_at)}"
-            f"  ·  passo corrente da {_format_duration(now - self._step_started_at)}"
+            tr("Tempo trascorso: {total}  ·  passo corrente da {step}").format(
+                total=_format_duration(now - self._started_at),
+                step=_format_duration(now - self._step_started_at),
+            )
         )
 
     def set_progress(self, value):

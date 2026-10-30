@@ -6,6 +6,8 @@ cambiare nel tempo, quindi il totale mostrato è sempre una STIMA, non una
 fattura esatta.
 """
 
+from .i18n import tr
+
 # Modelli disponibili per motore cloud, con prezzo USD per 1M token
 # (input, output). Aggiornare se i listini prezzi dei provider cambiano.
 # Il primo modello di ogni lista è il default.
@@ -106,7 +108,7 @@ class UsageTracker:
         engines_with_calls = {engine for engine, _ in self.calls_by_key}
         for engine, tiles in sorted(self.tile_count_by_engine.items()):
             if engine not in engines_with_calls:
-                lines.append(f"{engine}: {tiles} quadranti (locale, nessun costo)")
+                lines.append(tr("{engine}: {tiles} quadranti (locale, nessun costo)").format(engine=engine, tiles=tiles))
 
         for key in sorted(self.calls_by_key):
             engine_name, model_id = key
@@ -115,8 +117,9 @@ class UsageTracker:
             in_tok = self.input_tokens_by_key.get(key, 0)
             out_tok = self.output_tokens_by_key.get(key, 0)
             lines.append(
-                f"{engine_name} ({model_id}): {calls} chiamate, {in_tok}+{out_tok} token, "
-                f"~${cost:.4f} (stima)"
+                tr("{engine} ({model}): {calls} chiamate, {tokens_in}+{tokens_out} token, ~${cost:.4f} (stima)").format(
+                    engine=engine_name, model=model_id, calls=calls, tokens_in=in_tok, tokens_out=out_tok, cost=cost
+                )
             )
         return lines
 
@@ -124,10 +127,10 @@ class UsageTracker:
         total_cost = self.total_estimated_cost_usd()
         lines = self.summary_lines()
         if total_cost > 0:
-            lines.append(f"Totale stimato: ~${total_cost:.4f} USD (stima approssimativa)")
+            lines.append(tr("Totale stimato: ~${cost:.4f} USD (stima approssimativa)").format(cost=total_cost))
         if self.errors_by_message:
             lines.append("")
-            lines.append("⚠ Errori durante l'OCR (motore saltato su quei quadranti):")
+            lines.append("⚠ " + tr("Errori durante l'OCR (motore saltato su quei quadranti):"))
             for message, count in sorted(self.errors_by_message.items(), key=lambda kv: -kv[1]):
                 lines.append(f"  {message} (x{count})")
-        return "\n".join(lines) if lines else "Nessun motore OCR utilizzato."
+        return "\n".join(lines) if lines else tr("Nessun motore OCR utilizzato.")

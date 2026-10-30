@@ -25,9 +25,10 @@ from qgis.PyQt.QtWidgets import (
     QButtonGroup,
     QLabel,
 )
-from qgis.core import QgsProviderRegistry, QgsVectorLayer, QgsWkbTypes
+from qgis.core import Qgis, QgsProviderRegistry, QgsVectorLayer
 
 from .settings_dialog import SETTINGS_GROUP
+from ..core.i18n import tr
 from ..core.plugin_version import get_plugin_version
 from ..core import geopackage_writer
 
@@ -49,7 +50,7 @@ class OutputTargetDialog(QDialog):
 
     def __init__(self, parent=None, current_gpkg_path=None, current_layer_name=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Toponimi Extractor v{get_plugin_version()} - Destinazione risultati")
+        self.setWindowTitle(tr("Toponimi Extractor v{version} - Destinazione risultati").format(version=get_plugin_version()))
         self.setMinimumWidth(520)
 
         self.layer_name = None
@@ -75,22 +76,22 @@ class OutputTargetDialog(QDialog):
         form = QFormLayout()
         path_layout = QHBoxLayout()
         self.gpkg_path_edit = QLineEdit()
-        self.gpkg_path_edit.setPlaceholderText("Percorso completo del file GeoPackage")
+        self.gpkg_path_edit.setPlaceholderText(tr("Percorso completo del file GeoPackage"))
         # editingFinished e non textChanged: il file va riletto quando il
         # percorso è completo, non a ogni tasto.
         self.gpkg_path_edit.editingFinished.connect(self._on_path_edited)
-        browse_existing_btn = QPushButton("Apri esistente...")
+        browse_existing_btn = QPushButton(tr("Apri esistente..."))
         browse_existing_btn.clicked.connect(self._browse_existing_gpkg)
-        browse_new_btn = QPushButton("Nuovo file...")
+        browse_new_btn = QPushButton(tr("Nuovo file..."))
         browse_new_btn.clicked.connect(self._browse_new_gpkg)
         path_layout.addWidget(self.gpkg_path_edit)
         path_layout.addWidget(browse_existing_btn)
         path_layout.addWidget(browse_new_btn)
-        form.addRow("File GeoPackage:", path_layout)
+        form.addRow(tr("File GeoPackage:"), path_layout)
         layout.addLayout(form)
 
-        self.radio_existing_layer = QRadioButton("Aggiungi a un layer già presente nel file")
-        self.radio_new_layer = QRadioButton("Crea un nuovo layer")
+        self.radio_existing_layer = QRadioButton(tr("Aggiungi a un layer già presente nel file"))
+        self.radio_new_layer = QRadioButton(tr("Crea un nuovo layer"))
         self.layer_choice_group = QButtonGroup(self)
         self.layer_choice_group.addButton(self.radio_existing_layer)
         self.layer_choice_group.addButton(self.radio_new_layer)
@@ -102,7 +103,7 @@ class OutputTargetDialog(QDialog):
 
         layout.addWidget(self.radio_new_layer)
         self.layer_name_edit = QLineEdit()
-        self.layer_name_edit.setPlaceholderText("Nome del nuovo layer, es. toponimi_igm_montefeltro")
+        self.layer_name_edit.setPlaceholderText(tr("Nome del nuovo layer, es. toponimi_igm_montefeltro"))
         layout.addWidget(self.layer_name_edit)
 
         self.outcome_label = QLabel("")
@@ -137,7 +138,7 @@ class OutputTargetDialog(QDialog):
 
     def _browse_existing_gpkg(self):
         path, _ = QFileDialog.getOpenFileName(
-            self, "Apri GeoPackage esistente", self._current_path() or os.path.expanduser("~"),
+            self, tr("Apri GeoPackage esistente"), self._current_path() or os.path.expanduser("~"),
             "GeoPackage (*.gpkg)",
         )
         if path:
@@ -147,7 +148,7 @@ class OutputTargetDialog(QDialog):
     def _browse_new_gpkg(self):
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Crea nuovo GeoPackage",
+            tr("Crea nuovo GeoPackage"),
             self._current_path() or os.path.expanduser("~"),
             "GeoPackage (*.gpkg)",
             # Scegliere un file esistente qui non lo sovrascrive: ci si aggiunge un layer.
@@ -185,7 +186,7 @@ class OutputTargetDialog(QDialog):
                 layer = QgsVectorLayer(f"{gpkg_path}|layername={name}", name, "ogr")
                 if (
                     layer.isValid()
-                    and layer.geometryType() == QgsWkbTypes.GeometryType.PointGeometry
+                    and layer.geometryType() == Qgis.GeometryType.Point
                     and geopackage_writer.schema_is_compatible(layer)
                 ):
                     self._usable_layers[name] = layer.featureCount()
@@ -201,7 +202,7 @@ class OutputTargetDialog(QDialog):
         self.existing_layer_combo.blockSignals(True)
         self.existing_layer_combo.clear()
         for name in sorted(self._usable_layers, key=str.lower):
-            self.existing_layer_combo.addItem(f"{name}  ({self._usable_layers[name]} toponimi)", name)
+            self.existing_layer_combo.addItem(tr("{name}  ({count} toponimi)").format(name=name, count=self._usable_layers[name]), name)
         self.existing_layer_combo.blockSignals(False)
 
         has_usable = bool(self._usable_layers)
@@ -247,16 +248,18 @@ class OutputTargetDialog(QDialog):
         file_name = os.path.basename(path)
         if self.radio_existing_layer.isChecked() and self.existing_layer_combo.currentData():
             name = self.existing_layer_combo.currentData()
-            text = (
-                f"I nuovi toponimi verranno AGGIUNTI al layer \"{name}\" di {file_name} "
-                f"({self._usable_layers.get(name, 0)} già presenti). Nulla viene cancellato."
-            )
+            text = tr(
+                "I nuovi toponimi verranno AGGIUNTI al layer \"{name}\" di {file} "
+                "({count} già presenti). Nulla viene cancellato."
+            ).format(name=name, file=file_name, count=self._usable_layers.get(name, 0))
         else:
             name = self.layer_name_edit.text().strip() or "..."
             if os.path.isfile(path):
-                text = f"Verrà creato il nuovo layer \"{name}\" dentro il file esistente {file_name}."
+                text = tr("Verrà creato il nuovo layer \"{name}\" dentro il file esistente {file}.").format(
+                    name=name, file=file_name
+                )
             else:
-                text = f"Verrà creato il nuovo file {file_name} con il layer \"{name}\"."
+                text = tr("Verrà creato il nuovo file {file} con il layer \"{name}\".").format(file=file_name, name=name)
         self.outcome_label.setText(text)
 
     # ------------------------------------------------------------------ valori iniziali e conferma
@@ -286,8 +289,10 @@ class OutputTargetDialog(QDialog):
             QMessageBox.information(
                 self,
                 "Toponimi Extractor",
-                "Hai indicato un altro file: ho aggiornato le scelte sul layer.\n\n"
-                "Controlla la riga in grassetto, che dice cosa succederà, poi premi di nuovo OK.",
+                tr(
+                    "Hai indicato un altro file: ho aggiornato le scelte sul layer.\n\n"
+                    "Controlla la riga in grassetto, che dice cosa succederà, poi premi di nuovo OK."
+                ),
             )
             return
 
@@ -295,19 +300,21 @@ class OutputTargetDialog(QDialog):
         self._read_layers(self._current_path())
         selected_existing = self.existing_layer_combo.currentData() if self.radio_existing_layer.isChecked() else None
         if selected_existing and selected_existing not in self._usable_layers:
-            self._warn("Il layer scelto non è presente nel file indicato. Controlla il percorso e la scelta del layer.")
+            self._warn(tr("Il layer scelto non è presente nel file indicato. Controlla il percorso e la scelta del layer."))
             return
 
         gpkg_path = self._current_path()
         if not gpkg_path or not os.path.isabs(gpkg_path):
-            self._warn("Indica il percorso completo del file GeoPackage (usa \"Apri esistente...\" o \"Nuovo file...\").")
+            self._warn(
+                tr("Indica il percorso completo del file GeoPackage (usa \"Apri esistente...\" o \"Nuovo file...\").")
+            )
             return
         folder = os.path.dirname(gpkg_path)
         if not os.path.isdir(folder):
-            self._warn(f"La cartella non esiste:\n{folder}\n\nScegli una cartella esistente.")
+            self._warn(tr("La cartella non esiste:\n{folder}\n\nScegli una cartella esistente.").format(folder=folder))
             return
         if os.path.isdir(gpkg_path):
-            self._warn("Il percorso indicato è una cartella, non un file.")
+            self._warn(tr("Il percorso indicato è una cartella, non un file."))
             return
 
         if selected_existing:
@@ -317,27 +324,33 @@ class OutputTargetDialog(QDialog):
             layer_name = self.layer_name_edit.text().strip()
             append = False
             if not layer_name:
-                self._warn("Scrivi il nome del nuovo layer.")
+                self._warn(tr("Scrivi il nome del nuovo layer."))
                 return
             if not _VALID_LAYER_NAME.match(layer_name):
                 self._warn(
-                    "Il nome del layer può contenere solo lettere, cifre, spazi, trattini e underscore "
-                    "(massimo 60 caratteri) e deve iniziare con una lettera o una cifra."
+                    tr(
+                        "Il nome del layer può contenere solo lettere, cifre, spazi, trattini e underscore "
+                        "(massimo 60 caratteri) e deve iniziare con una lettera o una cifra."
+                    )
                 )
                 return
             if layer_name.endswith(geopackage_writer.AOI_LAYER_NAME_SUFFIX):
                 self._warn(
-                    f"I nomi che finiscono con \"{geopackage_writer.AOI_LAYER_NAME_SUFFIX}\" sono riservati "
-                    "ai layer delle aree di estrazione. Scegli un altro nome."
+                    tr(
+                        "I nomi che finiscono con \"{suffix}\" sono riservati "
+                        "ai layer delle aree di estrazione. Scegli un altro nome."
+                    ).format(suffix=geopackage_writer.AOI_LAYER_NAME_SUFFIX)
                 )
                 return
             if layer_name in self._usable_layers:
                 choice = QMessageBox.question(
                     self,
                     "Toponimi Extractor",
-                    f"Nel file esiste già un layer \"{layer_name}\" con {self._usable_layers[layer_name]} toponimi.\n\n"
-                    "Vuoi AGGIUNGERE i nuovi toponimi a quel layer?\n"
-                    "(Per tenerli separati rispondi No e scegli un altro nome.)",
+                    tr(
+                        "Nel file esiste già un layer \"{name}\" con {count} toponimi.\n\n"
+                        "Vuoi AGGIUNGERE i nuovi toponimi a quel layer?\n"
+                        "(Per tenerli separati rispondi No e scegli un altro nome.)"
+                    ).format(name=layer_name, count=self._usable_layers[layer_name]),
                     buttons=QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
                     defaultButton=QMessageBox.StandardButton.No,
                 )
@@ -346,8 +359,10 @@ class OutputTargetDialog(QDialog):
                 append = True
             elif layer_name in self._all_layer_names or geopackage_writer.aoi_layer_name(layer_name) in self._all_layer_names:
                 self._warn(
-                    f"Nel file esiste già un layer \"{layer_name}\" (o il suo layer delle aree) che non è "
-                    "un layer di toponimi di questo plugin. Per non toccarlo, scegli un altro nome."
+                    tr(
+                        "Nel file esiste già un layer \"{name}\" (o il suo layer delle aree) che non è "
+                        "un layer di toponimi di questo plugin. Per non toccarlo, scegli un altro nome."
+                    ).format(name=layer_name)
                 )
                 return
 

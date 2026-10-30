@@ -7,8 +7,14 @@ pipeline (local Tesseract + fallback to Claude/GPT vision models). The output
 is a GeoPackage point layer with one point for every recognized toponym,
 centered on the text itself (not on the tile that contains it).
 
-> The plugin user interface is currently in Italian. Italian UI labels are
-> quoted in this documentation, with the English meaning in parentheses.
+> **Compatibility:** a single code base for **QGIS 3.40+** (Qt5) and
+> **QGIS 4** (Qt6). It is tested on QGIS 3.44; on QGIS 4 the code uses the
+> same enum API that is available in 3.44, but it has not yet been run on a
+> QGIS 4 installation (see [Testing](#development)).
+
+> The user interface follows the QGIS language: English when QGIS is not set
+> to Italian (translations in `i18n/`). Italian UI labels are quoted in this
+> documentation, with the English meaning in parentheses.
 
 ## Features
 
@@ -50,7 +56,6 @@ for example `toponimi_extractor`.
 1. Clone or download this repository and place its contents in a folder named
    `toponimi_extractor` inside your QGIS plugins directory:
    - Windows: `%APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\`
-     (use `QGIS4` instead of `QGIS3` for QGIS 4)
    - Linux: `~/.local/share/QGIS/QGIS3/profiles/default/python/plugins/`
    - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/`
 2. Restart QGIS, then enable the plugin in **Plugins → Manage and Install
@@ -105,3 +110,13 @@ pure logic (grid, georeferencing) do not require QGIS and are run with:
 ```
 python test/test_core.py -v
 ```
+
+### Translations
+
+UI strings in the source code are Italian and go through `tr()` from
+`core/i18n.py`. The English translation is in `i18n/toponimi_extractor_en.ts`
+(Qt Linguist format); after editing it, compile it with
+`lrelease i18n/toponimi_extractor_en.ts` (or `pyside6-lrelease`) to refresh
+`i18n/toponimi_extractor_en.qm`, which is the file the plugin loads. To add a
+language, add `toponimi_extractor_<code>.ts/.qm` with the same context
+(`ToponimiExtractor`); any language without its own file falls back to English.

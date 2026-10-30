@@ -6,6 +6,7 @@ from qgis.core import QgsTask, QgsMessageLog, Qgis
 from qgis.PyQt.QtCore import pyqtSignal
 
 from ..core import ai_agent_calibrator
+from ..core.i18n import tr
 
 LOG_TAG = "Toponimi Extractor"
 
@@ -14,7 +15,7 @@ class CalibrationTask(QgsTask):
     stepChanged = pyqtSignal(str)
 
     def __init__(self, layer, aoi_extent, settings, on_finished=None):
-        super().__init__("Ricerca della modalità migliore per l'area", QgsTask.Flag.CanCancel)
+        super().__init__(tr("Ricerca della modalità migliore per l'area"), QgsTask.Flag.CanCancel)
         # Copia privata del layer, creata nel thread principale (vedi ExtractionTask).
         self.layer = layer.clone()
         self.aoi_extent = aoi_extent
@@ -40,7 +41,7 @@ class CalibrationTask(QgsTask):
             return False
         except Exception as exc:
             self.exception = exc
-            QgsMessageLog.logMessage(f"Ricerca modalità migliore fallita: {exc}", LOG_TAG, Qgis.Critical)
+            QgsMessageLog.logMessage(f"Ricerca modalità migliore fallita: {exc}", LOG_TAG, Qgis.MessageLevel.Critical)
             return False
         return not self.isCanceled()
 

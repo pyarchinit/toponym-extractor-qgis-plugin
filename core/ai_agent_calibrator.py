@@ -38,7 +38,7 @@ motore invece che la risoluzione.
 import json
 import tempfile
 
-from qgis.core import QgsRectangle, QgsMessageLog, Qgis, QgsUnitTypes
+from qgis.core import QgsRectangle, QgsMessageLog, Qgis
 
 from ..qgis_integration import tile_renderer
 from ..ocr import tesseract_engine
@@ -340,7 +340,7 @@ def _starting_resolution(layer, aoi_extent, tile_size_px, scale_range=None):
     except Exception:
         units = None
 
-    if units == QgsUnitTypes.DistanceMeters:
+    if units == Qgis.DistanceUnit.Meters:
         coarsest = scale_to_meters_per_pixel(STARTER_SCALE_DENOMINATORS[0])
         longest_side = max(aoi_extent.width(), aoi_extent.height())
         mpp = min(longest_side / tile_size_px, coarsest) if longest_side > 0 else coarsest
@@ -431,7 +431,7 @@ def _run_single_engine_ocr(image_path, width, height, engine, ocr_settings):
                 image_path, lang=ocr_settings.get("tesseract_lang", "ita"), min_confidence=0
             )
         except tesseract_engine.TesseractNotAvailable as exc:
-            QgsMessageLog.logMessage(f"Tesseract non disponibile durante calibrazione AI: {exc}", LOG_TAG, Qgis.Warning)
+            QgsMessageLog.logMessage(f"Tesseract non disponibile durante calibrazione AI: {exc}", LOG_TAG, Qgis.MessageLevel.Warning)
             return []
 
     if engine == "claude":
@@ -556,7 +556,7 @@ def run_ai_driven_calibration(
         except Exception as exc:
             QgsMessageLog.logMessage(
                 f"[AI calibration] Lettura range di scala WMS fallita (si procede senza vincolo noto): {exc}",
-                LOG_TAG, Qgis.Warning,
+                LOG_TAG, Qgis.MessageLevel.Warning,
             )
             scale_range = (None, None)
 
@@ -564,7 +564,7 @@ def run_ai_driven_calibration(
     if min_scale is not None or max_scale is not None:
         QgsMessageLog.logMessage(
             f"[AI calibration] Servizio WMS dichiara range di scala valido: "
-            f"1:{min_scale or '?'} — 1:{max_scale or '?'}", LOG_TAG, Qgis.Info,
+            f"1:{min_scale or '?'} — 1:{max_scale or '?'}", LOG_TAG, Qgis.MessageLevel.Info,
         )
 
     temp_dir = tempfile.mkdtemp(prefix="toponimi_extractor_ai_calib_")
@@ -651,7 +651,7 @@ def run_ai_driven_calibration(
                 )
                 attempts.append(attempt)
 
-                QgsMessageLog.logMessage(f"[AI calibration] {attempt.to_prompt_summary()}", LOG_TAG, Qgis.Info)
+                QgsMessageLog.logMessage(f"[AI calibration] {attempt.to_prompt_summary()}", LOG_TAG, Qgis.MessageLevel.Info)
                 if progress_callback:
                     progress_callback(attempt.to_prompt_summary())
 
@@ -751,7 +751,7 @@ def run_ai_driven_calibration(
                 )
                 QgsMessageLog.logMessage(
                     f"[AI calibration] Proposta scartata: {proposed_tile_count} tile stimati "
-                    f"(limite {MAX_ESTIMATED_TILES_FOR_EXTRACTION}), mpp={proposed_mpp}", LOG_TAG, Qgis.Warning,
+                    f"(limite {MAX_ESTIMATED_TILES_FOR_EXTRACTION}), mpp={proposed_mpp}", LOG_TAG, Qgis.MessageLevel.Warning,
                 )
                 # meters_per_pixel/tile_size_px/overlap_px/engine restano invariati
                 # per il prossimo giro del loop: l'agente viene informato del

@@ -33,6 +33,7 @@ from qgis.PyQt.QtWidgets import (
 
 from qgis.core import QgsDistanceArea, QgsMessageLog, QgsPointXY, QgsProject, Qgis
 
+from ..core.i18n import tr
 from ..core.plugin_version import get_plugin_version
 from ..core import georeference
 from ..core import deduplicator
@@ -61,7 +62,8 @@ COL_CONFIDENCE = 3
 COL_X = 4
 COL_Y = 5
 
-HEADERS = ["Includi", "Toponimo", "Motore", "Confidenza", "X", "Y"]
+def _headers():
+    return [tr("Includi"), tr("Toponimo"), tr("Motore"), tr("Confidenza"), "X", "Y"]
 
 DEDUP_DISTANCES_M = [5, 10, 20, 70]
 DEDUP_DEFAULT_DISTANCE_M = 20
@@ -71,7 +73,7 @@ class ResultsDock(QDockWidget):
     confirmed = pyqtSignal(list)
 
     def __init__(self, parent=None):
-        super().__init__(f"Toponimi Extractor v{get_plugin_version()} - Toponimi trovati", parent)
+        super().__init__(tr("Toponimi Extractor v{version} - Toponimi trovati").format(version=get_plugin_version()), parent)
         self.setAllowedAreas(Qt.DockWidgetArea.AllDockWidgetAreas)
         self._results = []
         self._ocr_settings = {}
@@ -82,7 +84,7 @@ class ResultsDock(QDockWidget):
         container = QWidget()
         layout = QVBoxLayout(container)
 
-        self.info_label = QLabel("Nessun risultato.")
+        self.info_label = QLabel(tr("Nessun risultato."))
         layout.addWidget(self.info_label)
 
         self.usage_label = QLabel("")
@@ -92,9 +94,9 @@ class ResultsDock(QDockWidget):
 
         # --- Selezione multipla: spunta/despunta in blocco ---
         selection_layout = QHBoxLayout()
-        self.check_selected_btn = QPushButton("Spunta selezionate")
+        self.check_selected_btn = QPushButton(tr("Spunta selezionate"))
         self.check_selected_btn.clicked.connect(lambda: self._set_checked_for_selection(True))
-        self.uncheck_selected_btn = QPushButton("Deseleziona spunta")
+        self.uncheck_selected_btn = QPushButton(tr("Deseleziona spunta"))
         self.uncheck_selected_btn.clicked.connect(lambda: self._set_checked_for_selection(False))
         selection_layout.addWidget(self.check_selected_btn)
         selection_layout.addWidget(self.uncheck_selected_btn)
@@ -102,34 +104,36 @@ class ResultsDock(QDockWidget):
 
         # --- Rilancio manuale di Claude sul quadrante di origine ---
         rerun_layout = QHBoxLayout()
-        self.rerun_claude_btn = QPushButton("Rilancia con Claude sul quadrante")
+        self.rerun_claude_btn = QPushButton(tr("Rilancia con Claude sul quadrante"))
         self.rerun_claude_btn.setToolTip(
-            "Per le righe selezionate, ripassa l'intero quadrante di origine a "
-            "Claude (bypassando Tesseract): utile quando Tesseract ha letto male "
-            "o ha perso toponimi (es. testo ruotato/curvo). I risultati trovati "
-            "in più vengono aggiunti alla tabella, quelli già presenti aggiornati."
+            tr(
+                "Per le righe selezionate, ripassa l'intero quadrante di origine a "
+                "Claude (bypassando Tesseract): utile quando Tesseract ha letto male "
+                "o ha perso toponimi (es. testo ruotato/curvo). I risultati trovati "
+                "in più vengono aggiunti alla tabella, quelli già presenti aggiornati."
+            )
         )
         self.rerun_claude_btn.clicked.connect(self._on_rerun_claude)
         rerun_layout.addWidget(self.rerun_claude_btn)
         layout.addLayout(rerun_layout)
 
         # --- Trova e sostituisci ---
-        replace_group = QGroupBox("Trova e sostituisci")
+        replace_group = QGroupBox(tr("Trova e sostituisci"))
         replace_layout = QVBoxLayout(replace_group)
 
         find_replace_row = QHBoxLayout()
         self.find_edit = QLineEdit()
-        self.find_edit.setPlaceholderText("Trova...")
+        self.find_edit.setPlaceholderText(tr("Trova..."))
         self.replace_edit = QLineEdit()
-        self.replace_edit.setPlaceholderText("Sostituisci con...")
+        self.replace_edit.setPlaceholderText(tr("Sostituisci con..."))
         find_replace_row.addWidget(self.find_edit)
         find_replace_row.addWidget(self.replace_edit)
         replace_layout.addLayout(find_replace_row)
 
         scope_row = QHBoxLayout()
-        self.radio_scope_both = QRadioButton("Lettere e numeri")
-        self.radio_scope_letters = QRadioButton("Solo lettere")
-        self.radio_scope_numbers = QRadioButton("Solo numeri")
+        self.radio_scope_both = QRadioButton(tr("Lettere e numeri"))
+        self.radio_scope_letters = QRadioButton(tr("Solo lettere"))
+        self.radio_scope_numbers = QRadioButton(tr("Solo numeri"))
         self.radio_scope_both.setChecked(True)
         self.scope_group = QButtonGroup(self)
         self.scope_group.addButton(self.radio_scope_both)
@@ -141,8 +145,8 @@ class ResultsDock(QDockWidget):
         replace_layout.addLayout(scope_row)
 
         apply_row = QHBoxLayout()
-        self.replace_selected_only_checkbox = QCheckBox("Solo righe selezionate")
-        self.replace_btn = QPushButton("Sostituisci")
+        self.replace_selected_only_checkbox = QCheckBox(tr("Solo righe selezionate"))
+        self.replace_btn = QPushButton(tr("Sostituisci"))
         self.replace_btn.clicked.connect(self._on_replace)
         apply_row.addWidget(self.replace_selected_only_checkbox)
         apply_row.addWidget(self.replace_btn)
@@ -151,48 +155,54 @@ class ResultsDock(QDockWidget):
         layout.addWidget(replace_group)
 
         # --- Pulizia duplicati da overlap tra quadranti ---
-        dedup_group = QGroupBox("Rimuovi duplicati (stesso luogo letto due volte)")
+        dedup_group = QGroupBox(tr("Rimuovi duplicati (stesso luogo letto due volte)"))
         dedup_layout = QVBoxLayout(dedup_group)
         dedup_hint = QLabel(
-            "I quadranti si sovrappongono lungo i bordi, quindi un nome sul bordo può essere letto "
-            "due volte. Vengono proposti come duplicati solo i nomi uguali o molto simili, letti da "
-            "due quadranti diversi nella loro zona comune, entro la distanza scelta. Due luoghi "
-            "con lo stesso nome nello stesso quadrante non vengono mai uniti. Prima di rimuovere "
-            "vedi l'elenco e confermi."
+            tr(
+                "I quadranti si sovrappongono lungo i bordi, quindi un nome sul bordo può essere letto "
+                "due volte. Vengono proposti come duplicati solo i nomi uguali o molto simili, letti da "
+                "due quadranti diversi nella loro zona comune, entro la distanza scelta. Due luoghi "
+                "con lo stesso nome nello stesso quadrante non vengono mai uniti. Prima di rimuovere "
+                "vedi l'elenco e confermi."
+            )
         )
         dedup_hint.setWordWrap(True)
         dedup_hint.setStyleSheet("color: #555; font-size: 11px;")
         dedup_layout.addWidget(dedup_hint)
 
         dedup_row = QHBoxLayout()
-        dedup_row.addWidget(QLabel("Distanza massima:"))
+        dedup_row.addWidget(QLabel(tr("Distanza massima:")))
         self.dedup_distance_combo = QComboBox()
         for meters in DEDUP_DISTANCES_M:
             self.dedup_distance_combo.addItem(f"{meters} m", meters)
         self.dedup_distance_combo.setCurrentIndex(DEDUP_DISTANCES_M.index(DEDUP_DEFAULT_DISTANCE_M))
         self.dedup_distance_combo.setToolTip(
-            "Due letture più lontane di così non vengono mai considerate lo stesso luogo. "
-            "Parti da un valore basso e aumentalo solo se restano doppioni evidenti."
+            tr(
+                "Due letture più lontane di così non vengono mai considerate lo stesso luogo. "
+                "Parti da un valore basso e aumentalo solo se restano doppioni evidenti."
+            )
         )
         dedup_row.addWidget(self.dedup_distance_combo)
-        self.dedup_btn = QPushButton("Cerca duplicati...")
+        self.dedup_btn = QPushButton(tr("Cerca duplicati..."))
         self.dedup_btn.setToolTip(
-            "Cerca i nomi letti due volte dal plugin e mostra l'elenco: nulla viene rimosso senza conferma."
+            tr("Cerca i nomi letti due volte dal plugin e mostra l'elenco: nulla viene rimosso senza conferma.")
         )
         self.dedup_btn.clicked.connect(self._on_deduplicate)
         dedup_row.addWidget(self.dedup_btn)
-        self.dedup_only_selected_checkbox = QCheckBox("Solo righe selezionate")
+        self.dedup_only_selected_checkbox = QCheckBox(tr("Solo righe selezionate"))
         self.dedup_only_selected_checkbox.setToolTip(
-            "Se spuntato, considera solo le righe attualmente selezionate nella tabella "
-            "invece di tutto il risultato."
+            tr(
+                "Se spuntato, considera solo le righe attualmente selezionate nella tabella "
+                "invece di tutto il risultato."
+            )
         )
         dedup_row.addWidget(self.dedup_only_selected_checkbox)
         dedup_layout.addLayout(dedup_row)
 
         layout.addWidget(dedup_group)
 
-        self.table = QTableWidget(0, len(HEADERS))
-        self.table.setHorizontalHeaderLabels(HEADERS)
+        self.table = QTableWidget(0, len(_headers()))
+        self.table.setHorizontalHeaderLabels(_headers())
         self.table.horizontalHeader().setStretchLastSection(False)
         self.table.setColumnWidth(COL_TOPONIMO, 200)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -200,7 +210,7 @@ class ResultsDock(QDockWidget):
         layout.addWidget(self.table)
 
         button_layout = QHBoxLayout()
-        self.confirm_btn = QPushButton("OK - Crea punti nel GeoPackage")
+        self.confirm_btn = QPushButton(tr("OK - Crea punti nel GeoPackage"))
         self.confirm_btn.clicked.connect(self._on_confirm)
         button_layout.addWidget(self.confirm_btn)
         layout.addLayout(button_layout)
@@ -270,7 +280,9 @@ class ResultsDock(QDockWidget):
             y_item.setFlags(y_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
             self.table.setItem(row, COL_Y, y_item)
 
-        self.info_label.setText(f"{len(results)} toponimi trovati. Correggi il testo se necessario, poi conferma.")
+        self.info_label.setText(
+            tr("{count} toponimi trovati. Correggi il testo se necessario, poi conferma.").format(count=len(results))
+        )
 
     def _selected_rows(self):
         return sorted({idx.row() for idx in self.table.selectedIndexes()})
@@ -353,7 +365,7 @@ class ResultsDock(QDockWidget):
             target_rows = set(self._selected_rows())
             if not target_rows:
                 QMessageBox.information(
-                    self, "Toponimi Extractor", "Seleziona prima una o più righe nella tabella."
+                    self, "Toponimi Extractor", tr("Seleziona prima una o più righe nella tabella.")
                 )
                 return
             scope_results = [r for i, r in enumerate(self._results) if i in target_rows]
@@ -371,24 +383,28 @@ class ResultsDock(QDockWidget):
             QMessageBox.information(
                 self,
                 "Toponimi Extractor",
-                f"Nessun duplicato trovato entro {max_distance} m.\n\n"
-                "Vengono considerati solo nomi uguali o molto simili letti da due quadranti diversi "
-                "nella loro zona di sovrapposizione.",
+                tr(
+                    "Nessun duplicato trovato entro {distance} m.\n\n"
+                    "Vengono considerati solo nomi uguali o molto simili letti da due quadranti diversi "
+                    "nella loro zona di sovrapposizione."
+                ).format(distance=max_distance),
             )
             return
 
         from .report_dialog import ReportDialog
 
         confirm = ReportDialog(
-            "Toponimi Extractor — duplicati trovati",
-            f"Trovati {len(groups_report)} luoghi letti più volte entro {max_distance} m: "
-            f"{removed_count} righe verrebbero rimosse.\n"
-            "Controlla l'elenco: se due voci sono in realtà luoghi distinti, annulla e riprova con una "
-            "distanza più bassa, oppure escludi le righe a mano.",
+            tr("Toponimi Extractor — duplicati trovati"),
+            tr(
+                "Trovati {groups} luoghi letti più volte entro {distance} m: "
+                "{removed} righe verrebbero rimosse.\n"
+                "Controlla l'elenco: se due voci sono in realtà luoghi distinti, annulla e riprova con una "
+                "distanza più bassa, oppure escludi le righe a mano."
+            ).format(groups=len(groups_report), distance=max_distance, removed=removed_count),
             "\n\n".join(groups_report),
             parent=self,
             default_filename="toponimi_extractor_duplicati.txt",
-            accept_label=f"Rimuovi {removed_count} duplicati",
+            accept_label=tr("Rimuovi {count} duplicati").format(count=removed_count),
         )
         if confirm.exec() != ReportDialog.DialogCode.Accepted:
             return
@@ -402,7 +418,7 @@ class ResultsDock(QDockWidget):
         rows = self._selected_rows()
         if not rows:
             QMessageBox.information(
-                self, "Toponimi Extractor", "Seleziona prima una o più righe nella tabella."
+                self, "Toponimi Extractor", tr("Seleziona prima una o più righe nella tabella.")
             )
             return
 
@@ -422,8 +438,10 @@ class ResultsDock(QDockWidget):
             QMessageBox.warning(
                 self,
                 "Toponimi Extractor",
-                "Le righe selezionate non hanno più l'immagine del quadrante disponibile "
-                "(sessione di estrazione troppo vecchia o già chiusa).",
+                tr(
+                    "Le righe selezionate non hanno più l'immagine del quadrante disponibile "
+                    "(sessione di estrazione troppo vecchia o già chiusa)."
+                ),
             )
             return
 
@@ -433,13 +451,15 @@ class ResultsDock(QDockWidget):
             QMessageBox.warning(
                 self,
                 "Toponimi Extractor",
-                "Claude non è disponibile: verifica nelle impostazioni che la libreria "
-                "'anthropic' sia installata e che la API key sia configurata.",
+                tr(
+                    "Claude non è disponibile: verifica nelle impostazioni che la libreria "
+                    "'anthropic' sia installata e che la API key sia configurata."
+                ),
             )
             return
 
         n_tiles = len(tile_paths)
-        self.info_label.setText(f"Rilancio Claude su {n_tiles} quadrante/i in corso...")
+        self.info_label.setText(tr("Rilancio Claude su {count} quadrante/i in corso...").format(count=n_tiles))
         self.rerun_claude_btn.setEnabled(False)
         try:
             for image_path, sample_result in tile_paths.items():
@@ -470,10 +490,10 @@ class ResultsDock(QDockWidget):
             )
         except Exception as exc:
             QgsMessageLog.logMessage(
-                f"Rilancio Claude fallito sul tile {image_path}: {exc}", LOG_TAG, Qgis.Warning
+                f"Rilancio Claude fallito sul tile {image_path}: {exc}", LOG_TAG, Qgis.MessageLevel.Warning
             )
             QMessageBox.warning(
-                self, "Toponimi Extractor", f"Rilancio Claude fallito su un quadrante:\n{exc}"
+                self, "Toponimi Extractor", tr("Rilancio Claude fallito su un quadrante:\n{error}").format(error=exc)
             )
             return
 

@@ -3,12 +3,12 @@
 import os
 
 from qgis.core import (
+    Qgis,
     QgsField,
     QgsFields,
     QgsFeature,
     QgsGeometry,
     QgsPointXY,
-    QgsWkbTypes,
     QgsVectorFileWriter,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
@@ -63,7 +63,7 @@ def _create_layer(path, crs_authid, layer_name, geometry_type, fields_spec):
     options.layerName = layer_name
     options.fileEncoding = "UTF-8"
     if os.path.exists(path):
-        options.actionOnExistingFile = QgsVectorFileWriter.CreateOrOverwriteLayer
+        options.actionOnExistingFile = QgsVectorFileWriter.ActionOnExistingFile.CreateOrOverwriteLayer
 
     writer = QgsVectorFileWriter.create(
         path,
@@ -73,7 +73,7 @@ def _create_layer(path, crs_authid, layer_name, geometry_type, fields_spec):
         QgsCoordinateTransformContext(),
         options,
     )
-    if writer.hasError() != QgsVectorFileWriter.NoError:
+    if writer.hasError() != QgsVectorFileWriter.WriterError.NoError:
         raise IOError(f"Errore creazione GeoPackage: {writer.errorMessage()}")
     del writer
 
@@ -85,7 +85,7 @@ def create_geopackage(path, crs_authid, layer_name="toponimi"):
     ricevere le feature estratte. Ritorna il path del layer nel formato
     `path|layername=...` utilizzabile da QgsVectorLayer.
     """
-    return _create_layer(path, crs_authid, layer_name, QgsWkbTypes.Point, FIELDS_SPEC)
+    return _create_layer(path, crs_authid, layer_name, Qgis.WkbType.Point, FIELDS_SPEC)
 
 
 def layer_exists(path, layer_name):
@@ -130,7 +130,7 @@ def open_or_create_aoi_layer(path, crs_authid, layer_name, overwrite=False):
         layer = QgsVectorLayer(uri, layer_name, "ogr")
         if layer.isValid():
             return layer
-    uri = _create_layer(path, crs_authid, layer_name, QgsWkbTypes.Polygon, AOI_FIELDS_SPEC)
+    uri = _create_layer(path, crs_authid, layer_name, Qgis.WkbType.Polygon, AOI_FIELDS_SPEC)
     return QgsVectorLayer(uri, layer_name, "ogr")
 
 

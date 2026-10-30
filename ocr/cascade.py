@@ -72,7 +72,7 @@ def _call_with_retry(func, engine_label, max_retries=CLOUD_CALL_MAX_RETRIES, is_
             QgsMessageLog.logMessage(
                 f"{engine_label}: tentativo {attempt + 1}/{max_retries + 1} fallito ({exc}), "
                 f"nuovo tentativo tra {wait_seconds:.0f}s...",
-                LOG_TAG, Qgis.Warning,
+                LOG_TAG, Qgis.MessageLevel.Warning,
             )
             if not _sleep_unless_canceled(wait_seconds, is_canceled):
                 break
@@ -114,13 +114,13 @@ def run_cascade(image_path, image_width, image_height, settings, usage_tracker=N
             )
             engine_used = tesseract_engine.ENGINE_NAME
         except tesseract_engine.TesseractNotAvailable as exc:
-            QgsMessageLog.logMessage(f"Tesseract non disponibile: {exc}", LOG_TAG, Qgis.Warning)
+            QgsMessageLog.logMessage(f"Tesseract non disponibile: {exc}", LOG_TAG, Qgis.MessageLevel.Warning)
             if usage_tracker is not None:
                 usage_tracker.record_error(tesseract_engine.ENGINE_NAME, str(exc))
             words = []
             engine_used = None
     else:
-        QgsMessageLog.logMessage("Tesseract disabilitato nelle impostazioni.", LOG_TAG, Qgis.Info)
+        QgsMessageLog.logMessage("Tesseract disabilitato nelle impostazioni.", LOG_TAG, Qgis.MessageLevel.Info)
 
     needs_fallback = _needs_cloud_fallback(words, settings)
 
@@ -156,14 +156,14 @@ def run_cascade(image_path, image_width, image_height, settings, usage_tracker=N
                             output_tokens=claude_usage.get("output_tokens", 0),
                         )
                 except Exception as exc:
-                    QgsMessageLog.logMessage(f"Errore fallback Claude: {exc}", LOG_TAG, Qgis.Warning)
+                    QgsMessageLog.logMessage(f"Errore fallback Claude: {exc}", LOG_TAG, Qgis.MessageLevel.Warning)
                     if usage_tracker is not None:
                         usage_tracker.record_error(claude_engine.ENGINE_NAME, str(exc))
             else:
                 QgsMessageLog.logMessage(
                     "Fallback Claude non disponibile (libreria 'anthropic' mancante o API key assente).",
                     LOG_TAG,
-                    Qgis.Warning,
+                    Qgis.MessageLevel.Warning,
                 )
                 if usage_tracker is not None:
                     usage_tracker.record_error(
@@ -195,14 +195,14 @@ def run_cascade(image_path, image_width, image_height, settings, usage_tracker=N
                             output_tokens=gpt_usage.get("output_tokens", 0),
                         )
                 except Exception as exc:
-                    QgsMessageLog.logMessage(f"Errore fallback GPT: {exc}", LOG_TAG, Qgis.Warning)
+                    QgsMessageLog.logMessage(f"Errore fallback GPT: {exc}", LOG_TAG, Qgis.MessageLevel.Warning)
                     if usage_tracker is not None:
                         usage_tracker.record_error(gpt_engine.ENGINE_NAME, str(exc))
             else:
                 QgsMessageLog.logMessage(
                     "Fallback GPT non disponibile (libreria 'openai' mancante o API key assente).",
                     LOG_TAG,
-                    Qgis.Warning,
+                    Qgis.MessageLevel.Warning,
                 )
                 if usage_tracker is not None:
                     usage_tracker.record_error(
@@ -216,7 +216,7 @@ def run_cascade(image_path, image_width, image_height, settings, usage_tracker=N
         QgsMessageLog.logMessage(
             "Nessuna parola trovata da Tesseract e fallback cloud disattivato nelle impostazioni.",
             LOG_TAG,
-            Qgis.Info,
+            Qgis.MessageLevel.Info,
         )
 
     return words, (engine_used or "none")

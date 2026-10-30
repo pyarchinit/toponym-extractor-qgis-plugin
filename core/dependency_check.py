@@ -30,7 +30,7 @@ def missing_packages():
             QgsMessageLog.logMessage(
                 f"Dependency check: {module_name} non trovato",
                 "Toponimi Extractor",
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
             )
             missing.append(pip_name)
     return missing

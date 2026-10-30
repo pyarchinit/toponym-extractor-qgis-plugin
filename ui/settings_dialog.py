@@ -22,6 +22,7 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
 )
 
+from ..core.i18n import tr
 from ..core.plugin_version import get_plugin_version
 from ..core.usage_tracker import CLAUDE_MODELS, GPT_MODELS, default_model
 from ..core.wms_capabilities import scale_to_meters_per_pixel
@@ -33,7 +34,7 @@ SETTINGS_GROUP = "ToponimiExtractor"
 class SettingsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Toponimi Extractor v{get_plugin_version()} - Impostazioni")
+        self.setWindowTitle(tr("Toponimi Extractor v{version} - Impostazioni").format(version=get_plugin_version()))
         self.setMinimumWidth(520)
 
         self._build_ui()
@@ -57,10 +58,10 @@ class SettingsDialog(QDialog):
         grid_page_layout = QVBoxLayout(grid_page)
 
         # --- Motore OCR primario ---
-        engine_group = QGroupBox("Motore OCR primario")
+        engine_group = QGroupBox(tr("Motore OCR primario"))
         engine_layout = QVBoxLayout(engine_group)
-        self.radio_tesseract = QRadioButton("Tesseract locale")
-        self.radio_cloud_only = QRadioButton("Solo cloud (Claude/GPT)")
+        self.radio_tesseract = QRadioButton(tr("Tesseract locale"))
+        self.radio_cloud_only = QRadioButton(tr("Solo cloud (Claude/GPT)"))
         self.radio_tesseract.setChecked(True)
         self.engine_button_group = QButtonGroup(self)
         self.engine_button_group.addButton(self.radio_tesseract)
@@ -74,15 +75,15 @@ class SettingsDialog(QDialog):
         tesseract_form = QFormLayout(tesseract_group)
         self.tesseract_cmd_edit = QLineEdit()
         self.tesseract_cmd_edit.setPlaceholderText(
-            r"C:\Program Files\Tesseract-OCR\tesseract.exe (vuoto = PATH di sistema)"
+            r"C:\Program Files\Tesseract-OCR\tesseract.exe " + tr("(vuoto = PATH di sistema)")
         )
-        tesseract_form.addRow("Percorso eseguibile:", self.tesseract_cmd_edit)
+        tesseract_form.addRow(tr("Percorso eseguibile:"), self.tesseract_cmd_edit)
         self.tesseract_lang_edit = QLineEdit("ita")
-        tesseract_form.addRow("Lingua (codice Tesseract):", self.tesseract_lang_edit)
+        tesseract_form.addRow(tr("Lingua (codice Tesseract):"), self.tesseract_lang_edit)
         tesseract_links = QLabel(
-            "Tesseract non è installato? "
-            f'<a href="{tesseract_engine.INSTALL_GUIDE_URL}">Istruzioni di installazione</a> · '
-            f'<a href="{tesseract_engine.PREBUILT_INSTALLERS_URL}">Installer già pronti</a>'
+            tr("Tesseract non è installato? ")
+            + f'<a href="{tesseract_engine.INSTALL_GUIDE_URL}">{tr("Istruzioni di installazione")}</a> · '
+            + f'<a href="{tesseract_engine.PREBUILT_INSTALLERS_URL}">{tr("Installer già pronti")}</a>'
         )
         tesseract_links.setOpenExternalLinks(True)
         tesseract_links.setWordWrap(True)
@@ -91,10 +92,10 @@ class SettingsDialog(QDialog):
         engine_page_layout.addStretch(1)
 
         # --- Fallback cloud ---
-        cloud_group = QGroupBox("Fallback cloud")
+        cloud_group = QGroupBox(tr("Fallback cloud"))
         cloud_layout = QVBoxLayout(cloud_group)
 
-        self.use_cloud_checkbox = QCheckBox("Abilita fallback cloud per testo a bassa confidenza")
+        self.use_cloud_checkbox = QCheckBox(tr("Abilita fallback cloud per testo a bassa confidenza"))
         self.use_cloud_checkbox.setChecked(True)
         cloud_layout.addWidget(self.use_cloud_checkbox)
 
@@ -102,68 +103,78 @@ class SettingsDialog(QDialog):
         self.provider_combo = QComboBox()
         self.provider_combo.addItem("Claude (Anthropic)", "claude")
         self.provider_combo.addItem("GPT (OpenAI)", "gpt")
-        self.provider_combo.addItem("Entrambi", "both")
-        cloud_form.addRow("Provider:", self.provider_combo)
+        self.provider_combo.addItem(tr("Entrambi"), "both")
+        cloud_form.addRow(tr("Provider:"), self.provider_combo)
 
         self.confidence_spin = QDoubleSpinBox()
         self.confidence_spin.setRange(0, 100)
         self.confidence_spin.setValue(60)
         self.confidence_spin.setSuffix(" %")
-        cloud_form.addRow("Soglia confidenza minima:", self.confidence_spin)
+        cloud_form.addRow(tr("Soglia confidenza minima:"), self.confidence_spin)
 
-        openai_env = "impostata" if os.environ.get("OPENAI_API_KEY") else "NON impostata"
+        openai_env = tr("impostata") if os.environ.get("OPENAI_API_KEY") else tr("NON impostata")
 
         self.anthropic_env_var_combo = QComboBox()
         self.anthropic_env_var_combo.setEditable(True)
         for var_name in ("ANTHROPIC_API_KEY", "CLAUDE_API_KEY"):
-            state = "impostata" if os.environ.get(var_name) else "NON impostata"
+            state = tr("impostata") if os.environ.get(var_name) else tr("NON impostata")
             self.anthropic_env_var_combo.addItem(f"{var_name} ({state})", var_name)
-        cloud_form.addRow("Variabile d'ambiente API key Claude:", self.anthropic_env_var_combo)
+        cloud_form.addRow(tr("Variabile d'ambiente API key Claude:"), self.anthropic_env_var_combo)
 
         self.anthropic_key_edit = QLineEdit()
         self.anthropic_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.anthropic_key_edit.setPlaceholderText("Override manuale (vuoto = usa la variabile d'ambiente sopra)")
-        cloud_form.addRow("Override API key Claude:", self.anthropic_key_edit)
+        self.anthropic_key_edit.setPlaceholderText(tr("Override manuale (vuoto = usa la variabile d'ambiente sopra)"))
+        cloud_form.addRow(tr("Override API key Claude:"), self.anthropic_key_edit)
 
         self.openai_key_edit = QLineEdit()
         self.openai_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
-        self.openai_key_edit.setPlaceholderText(f"Da variabile d'ambiente OPENAI_API_KEY ({openai_env})")
-        cloud_form.addRow("Override API key GPT:", self.openai_key_edit)
+        self.openai_key_edit.setPlaceholderText(tr("Da variabile d'ambiente OPENAI_API_KEY ({state})").format(state=openai_env))
+        cloud_form.addRow(tr("Override API key GPT:"), self.openai_key_edit)
 
         self.claude_model_combo = QComboBox()
         for model_id, label, in_price, out_price in CLAUDE_MODELS:
-            self.claude_model_combo.addItem(f"{label} — ${in_price:.2f}/${out_price:.2f} per 1M token", model_id)
-        cloud_form.addRow("Modello Claude:", self.claude_model_combo)
+            self.claude_model_combo.addItem(
+                tr("{label} — ${in_price:.2f}/${out_price:.2f} per 1M token").format(
+                    label=label, in_price=in_price, out_price=out_price
+                ),
+                model_id,
+            )
+        cloud_form.addRow(tr("Modello Claude:"), self.claude_model_combo)
 
         self.gpt_model_combo = QComboBox()
         for model_id, label, in_price, out_price in GPT_MODELS:
-            self.gpt_model_combo.addItem(f"{label} — ${in_price:.2f}/${out_price:.2f} per 1M token", model_id)
-        cloud_form.addRow("Modello GPT:", self.gpt_model_combo)
+            self.gpt_model_combo.addItem(
+                tr("{label} — ${in_price:.2f}/${out_price:.2f} per 1M token").format(
+                    label=label, in_price=in_price, out_price=out_price
+                ),
+                model_id,
+            )
+        cloud_form.addRow(tr("Modello GPT:"), self.gpt_model_combo)
 
         cloud_layout.addLayout(cloud_form)
         cloud_page_layout.addWidget(cloud_group)
         cloud_page_layout.addStretch(1)
 
         # --- Griglia / quadranti ---
-        grid_group = QGroupBox("Quadranti")
+        grid_group = QGroupBox(tr("Quadranti"))
         grid_form = QFormLayout(grid_group)
-        resolution_group = QGroupBox("Risoluzione: quanto ingrandire la carta")
+        resolution_group = QGroupBox(tr("Risoluzione: quanto ingrandire la carta"))
         resolution_form = QFormLayout(resolution_group)
 
         self.max_tile_spin = QSpinBox()
         self.max_tile_spin.setRange(0, 16384)
         self.max_tile_spin.setValue(0)
-        self.max_tile_spin.setSpecialValueText("Automatico (max 1400, adatto all'OCR)")
-        grid_form.addRow("Dimensione max tile (px):", self.max_tile_spin)
+        self.max_tile_spin.setSpecialValueText(tr("Automatico (max 1400, adatto all'OCR)"))
+        grid_form.addRow(tr("Dimensione max tile (px):"), self.max_tile_spin)
 
-        self.radio_resolution_auto = QRadioButton("Automatica — lo zoom della mappa quando disegni l'area")
-        self.radio_resolution_scale = QRadioButton("Scala (es. 1:2000)")
-        self.radio_resolution_manual = QRadioButton("Risoluzione manuale")
+        self.radio_resolution_auto = QRadioButton(tr("Automatica — lo zoom della mappa quando disegni l'area"))
+        self.radio_resolution_scale = QRadioButton(tr("Scala (es. 1:2000)"))
+        self.radio_resolution_manual = QRadioButton(tr("Risoluzione manuale"))
         self.radio_resolution_calibrate = QRadioButton(
-            "Calibrazione automatica — prova alcune scale con Tesseract"
+            tr("Calibrazione automatica — prova alcune scale con Tesseract")
         )
         self.radio_resolution_ai_driven = QRadioButton(
-            "AI DRIVEN — decide un agente AI (max 5 prove)"
+            tr("AI DRIVEN — decide un agente AI (max 5 prove)")
         )
         self.radio_resolution_auto.setChecked(True)
         self.resolution_mode_group = QButtonGroup(self)
@@ -181,7 +192,7 @@ class SettingsDialog(QDialog):
         self.scale_spin.setPrefix("1 : ")
         self.scale_spin.setGroupSeparatorShown(True)
         self.scale_spin.valueChanged.connect(self._update_scale_hint)
-        resolution_form.addRow("Denominatore scala:", self.scale_spin)
+        resolution_form.addRow(tr("Denominatore scala:"), self.scale_spin)
 
         self.scale_hint_label = QLabel("")
         self.scale_hint_label.setStyleSheet("color: #555; font-size: 11px;")
@@ -193,7 +204,7 @@ class SettingsDialog(QDialog):
         self.resolution_spin.setRange(0.0001, 100000)
         self.resolution_spin.setDecimals(4)
         self.resolution_spin.setValue(1.0)
-        resolution_form.addRow("Risoluzione (unità CRS/px):", self.resolution_spin)
+        resolution_form.addRow(tr("Risoluzione (unità CRS/px):"), self.resolution_spin)
 
         resolution_form.addRow(self.radio_resolution_calibrate)
 
@@ -201,25 +212,27 @@ class SettingsDialog(QDialog):
         self.calibrate_min_confidence_spin.setRange(0, 100)
         self.calibrate_min_confidence_spin.setValue(50)
         self.calibrate_min_confidence_spin.setSuffix(" %")
-        resolution_form.addRow("Confidenza minima:", self.calibrate_min_confidence_spin)
+        resolution_form.addRow(tr("Confidenza minima:"), self.calibrate_min_confidence_spin)
 
         self.calibrate_min_words_spin = QSpinBox()
         self.calibrate_min_words_spin.setRange(1, 100)
         self.calibrate_min_words_spin.setValue(1)
-        resolution_form.addRow("Parole minime nel test:", self.calibrate_min_words_spin)
+        resolution_form.addRow(tr("Parole minime nel test:"), self.calibrate_min_words_spin)
 
         resolution_form.addRow(self.radio_resolution_ai_driven)
 
         self.ai_agent_provider_combo = QComboBox()
         self.ai_agent_provider_combo.addItem("Claude (Anthropic)", "claude")
         self.ai_agent_provider_combo.addItem("GPT (OpenAI)", "gpt")
-        resolution_form.addRow("Agente decisionale:", self.ai_agent_provider_combo)
+        resolution_form.addRow(tr("Agente decisionale:"), self.ai_agent_provider_combo)
 
         ai_driven_hint = QLabel(
-            "L'agente guarda un tile di prova al centro dell'area, legge il risultato OCR e decide\n"
-            "da solo risoluzione/tile/overlap/motore, fino a 5 tentativi. Richiede una API key valida\n"
-            "(Claude o GPT, a seconda della scelta sopra) già configurata nella sezione Fallback cloud.\n"
-            "Viene proposta dopo ogni selezione dell'area, qualunque sia la modalità scelta qui."
+            tr(
+                "L'agente guarda un tile di prova al centro dell'area, legge il risultato OCR e decide "
+                "da solo risoluzione/tile/overlap/motore, fino a 5 tentativi. Richiede una API key valida "
+                "(Claude o GPT, a seconda della scelta sopra) già configurata nella sezione Fallback cloud. "
+                "Viene proposta dopo ogni selezione dell'area, qualunque sia la modalità scelta qui."
+            )
         )
         ai_driven_hint.setStyleSheet("color: #555; font-size: 11px;")
         ai_driven_hint.setWordWrap(True)
@@ -234,14 +247,16 @@ class SettingsDialog(QDialog):
         self.overlap_spin = QSpinBox()
         self.overlap_spin.setRange(0, 300)
         self.overlap_spin.setValue(200)
-        grid_form.addRow("Sovrapposizione tile (px):", self.overlap_spin)
+        grid_form.addRow(tr("Sovrapposizione tile (px):"), self.overlap_spin)
 
         resolution_page_layout.addWidget(resolution_group)
         resolution_page_layout.addStretch(1)
 
         grid_hint = QLabel(
-            "Un quadrante è un'immagine della carta inviata al motore di lettura. "
-            "Lascia \"Automatico\" se non hai un motivo preciso per cambiarlo."
+            tr(
+                "Un quadrante è un'immagine della carta inviata al motore di lettura. "
+                "Lascia \"Automatico\" se non hai un motivo preciso per cambiarlo."
+            )
         )
         grid_hint.setWordWrap(True)
         grid_hint.setStyleSheet("color: #555; font-size: 11px;")
@@ -249,10 +264,10 @@ class SettingsDialog(QDialog):
         grid_page_layout.addWidget(grid_hint)
         grid_page_layout.addStretch(1)
 
-        self.tabs.addTab(resolution_page, "Risoluzione")
-        self.tabs.addTab(engine_page, "Motore di lettura")
-        self.tabs.addTab(cloud_page, "Cloud e chiavi")
-        self.tabs.addTab(grid_page, "Quadranti")
+        self.tabs.addTab(resolution_page, tr("Risoluzione"))
+        self.tabs.addTab(engine_page, tr("Motore di lettura"))
+        self.tabs.addTab(cloud_page, tr("Cloud e chiavi"))
+        self.tabs.addTab(grid_page, tr("Quadranti"))
 
         self._update_resolution_mode()
 
@@ -276,8 +291,9 @@ class SettingsDialog(QDialog):
     def _update_scale_hint(self):
         meters_per_pixel = scale_to_meters_per_pixel(self.scale_spin.value())
         self.scale_hint_label.setText(
-            f"≈ {meters_per_pixel:.4f} m/pixel (per CRS proiettati in metri; "
-            f"in gradi il calcolo non è valido)"
+            tr("≈ {value:.4f} m/pixel (per CRS proiettati in metri; in gradi il calcolo non è valido)").format(
+                value=meters_per_pixel
+            )
         )
 
     def _load_settings(self):

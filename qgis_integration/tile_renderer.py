@@ -112,7 +112,7 @@ def render_tile(layer, tile, output_dir, filename=None):
                 f"Rendering tile [{tile.row},{tile.col}] risultato vuoto al tentativo "
                 f"{attempt + 1}/{RENDER_MAX_RETRIES + 1}: ri-renderizzo tra "
                 f"{RENDER_RETRY_WAIT_SECONDS}s (possibile richiesta WMS non ancora completata).",
-                LOG_TAG, Qgis.Warning,
+                LOG_TAG, Qgis.MessageLevel.Warning,
             )
             # NOTA: qui serve un'attesa "passiva" (time.sleep), non
             # QCoreApplication.processEvents() — questa funzione può girare

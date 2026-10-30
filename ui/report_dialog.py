@@ -16,6 +16,7 @@ from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
 )
 
+from ..core.i18n import tr
 from .settings_dialog import SETTINGS_GROUP
 
 
@@ -46,8 +47,8 @@ class ReportDialog(QDialog):
             buttons.addButton(QDialogButtonBox.StandardButton.Cancel)
             buttons.button(QDialogButtonBox.StandardButton.Ok).setText(accept_label)
             buttons.rejected.connect(self.reject)
-        copy_btn = buttons.addButton("Copia", QDialogButtonBox.ButtonRole.ActionRole)
-        save_btn = buttons.addButton("Salva su file...", QDialogButtonBox.ButtonRole.ActionRole)
+        copy_btn = buttons.addButton(tr("Copia"), QDialogButtonBox.ButtonRole.ActionRole)
+        save_btn = buttons.addButton(tr("Salva su file..."), QDialogButtonBox.ButtonRole.ActionRole)
         copy_btn.clicked.connect(self._copy)
         save_btn.clicked.connect(self._save)
         buttons.accepted.connect(self.accept)
@@ -66,7 +67,10 @@ class ReportDialog(QDialog):
         s.endGroup()
 
         path, _ = QFileDialog.getSaveFileName(
-            self, "Salva report", os.path.join(last_dir, self._default_filename), "File di testo (*.txt)"
+            self,
+            tr("Salva report"),
+            os.path.join(last_dir, self._default_filename),
+            tr("File di testo (*.txt)"),
         )
         if not path:
             return
@@ -74,4 +78,4 @@ class ReportDialog(QDialog):
             with open(path, "w", encoding="utf-8") as f:
                 f.write(self.full_text())
         except OSError as exc:
-            QMessageBox.warning(self, "Toponimi Extractor", f"Impossibile salvare il file:\n{exc}")
+            QMessageBox.warning(self, "Toponimi Extractor", tr("Impossibile salvare il file:\n{error}").format(error=exc))
